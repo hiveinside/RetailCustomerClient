@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">RetailCustomerClient</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="accessibility_service">RetailJunction</string>
+    <string name="accessibility_service_description">Please switch \'ON\' on the top right to allow RetailJunction install apps automatically for you. \n \n \nThis is one time action. After installtion RetailJunction will Uninstall.</string>
+
+
+</resources>
