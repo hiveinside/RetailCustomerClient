@@ -15,3 +15,17 @@ local.properties
 
 # User-specific configurations
 .idea
+
+# http://stackoverflow.com/questions/16736856/what-should-be-in-my-gitignore-for-an-android-studio-project
+*.iml
+app/*.iml
+*.iws
+*.ipr
+.idea/
+.gradle/
+local.properties
+
+*/build/
+
+*~
+*.swp

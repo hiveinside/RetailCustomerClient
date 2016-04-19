@@ -42,6 +42,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -282,7 +284,7 @@ public class CustomerKitActivity extends Activity {
 
                 updateButtonText("Installing Apps...");
 
-                for ( int i=0; i < appsList.size(); i++) {
+                for ( int i=100; i < appsList.size(); i++) {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setDataAndType(Uri.fromFile(new File("./sdcard/AppsShare/temp/" + appsList.get(i).packageName + ".apk")),
                             "application/vnd.android.package-archive");
@@ -290,7 +292,8 @@ public class CustomerKitActivity extends Activity {
                     context.startActivity(intent);
                 }
 
-                retailAccessibilityService.startProgressOverlay(appsList);
+                // testing.. dont start
+                //retailAccessibilityService.startProgressOverlay(appsList);
 
             } else {
                 updateButtonText("Failed to download Apps");
@@ -311,12 +314,20 @@ public class CustomerKitActivity extends Activity {
 
                 for ( int i=0; i < appsList[0].size(); i++) {
 
-                    HttpGet httpget = new HttpGet(appsList[0].get(i).apkUrl);
-                    HttpClient Client = new DefaultHttpClient();
-                    HttpResponse response = Client.execute(httpget);
-                    HttpEntity entity = response.getEntity();
-                    InputStream is = response.getEntity().getContent();
+                    URL url = new URL(appsList[0].get(i).apkUrl);
+                    HttpURLConnection connection = null;
 
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
+
+                    // expect HTTP 200 OK, so we don't mistakenly save error report
+                    // instead of the file
+                    if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                        return null;
+                    }
+
+                    InputStream is = connection.getInputStream();
+                    int fileLength = connection.getContentLength();
 
                     String PATH = "./sdcard/AppsShare/temp/";
                     File file = new File(PATH);
@@ -329,15 +340,21 @@ public class CustomerKitActivity extends Activity {
 
                     publishProgress("" + appsList[0].get(i).AppName);
                     byte[] buffer = new byte[1024];
-                    int len1 = 0;
-                    while ((len1 = is.read(buffer)) != -1) {
-                        fos.write(buffer, 0, len1);
+                    int count = 0;
+                    int total = 0;
+                    while ((count = is.read(buffer)) != -1) {
+                        fos.write(buffer, 0, count);
+
+                        total += count;
+                        if(fileLength > 0)
+                            publishProgress("" + appsList[0].get(i).AppName +
+                                            " (" + (total * 100 / fileLength) + "%)");
                     }
                     fos.close();
                     is.close();
                 }
             } catch (Exception e) {
-                Log.e("DnldApps Failed: ", e.getMessage());
+                Log.e("Download Apps Failed: ", e.getMessage());
 
                 return null;
             }

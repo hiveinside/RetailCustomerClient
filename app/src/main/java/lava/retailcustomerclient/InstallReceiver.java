@@ -17,12 +17,15 @@ public class InstallReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // String packageName = intent.getData().getEncodedSchemeSpecificPart();
+        String packageName = intent.getData().getEncodedSchemeSpecificPart();
 
 
         //This log never displays if the constructor is in or commented out
-        // Log.d("InstallReceiver", "Install detected: " + packageName + " " + intent.getAction());
-        Log.d("InstallReceiver", "Install detected intent action: " + intent.getAction());
+        //Log.e("InstallReceiver", "Install detected: " + packageName + " " + intent.getAction());
+        if ((intent.getAction().equals("android.intent.action.PACKAGE_ADDED")) &&
+                (intent.getComponent().getPackageName().equals(context.getPackageName()))) {
+            // success; include in data to send back
+            Log.e("InstallReceiver", "Installed: " + packageName);
+        }
     }
-
 }
