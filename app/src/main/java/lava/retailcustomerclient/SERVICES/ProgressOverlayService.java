@@ -1,4 +1,4 @@
-package lava.retailcustomerclient;
+package lava.retailcustomerclient.SERVICES;
 
 import android.app.Service;
 import android.content.Context;
@@ -18,6 +18,8 @@ import com.github.lzyzsd.circleprogress.ArcProgress;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import lava.retailcustomerclient.R;
 
 /**
  * Created by Mridul on 4/12/2016.

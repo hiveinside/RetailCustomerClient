@@ -1,9 +1,9 @@
-package lava.retailcustomerclient;
+package lava.retailcustomerclient.UTILS;
 
 /**
  * Created by Mridul on 4/12/2016.
  */
-class DeviceInfo {
+public class DeviceInfoObject {
     public String IMEI;
     public String android_id;
     public String gcm_id; //// TODO: 4/19/2016  

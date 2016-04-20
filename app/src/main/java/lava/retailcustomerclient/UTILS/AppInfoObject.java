@@ -1,11 +1,11 @@
-package lava.retailcustomerclient;
+package lava.retailcustomerclient.UTILS;
 
 import java.util.Date;
 
 /**
  * Created by Mridul on 4/5/2016.
  */
-class AppInfo  {
+public class AppInfoObject {
 
     public String AppName;
 

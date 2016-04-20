@@ -39,8 +39,8 @@
         android:layout_marginBottom="20dp"
         android:layout_gravity="center_horizontal|center"
         android:layout_alignParentBottom="true"
-        android:id="@+id/install"
-        android:onClick="installApps"
+        android:id="@+id/doInstall"
+        android:onClick="doCompleteProcess"
         android:textAllCaps="false" />
 
 </RelativeLayout>

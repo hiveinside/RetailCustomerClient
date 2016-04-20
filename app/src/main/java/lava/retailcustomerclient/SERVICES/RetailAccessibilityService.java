@@ -1,11 +1,8 @@
-package lava.retailcustomerclient;
+package lava.retailcustomerclient.SERVICES;
 
 import android.accessibilityservice.AccessibilityService;
-import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
 import android.graphics.PixelFormat;
-import android.os.Binder;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -13,21 +10,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.content.Context;
-import android.provider.Settings;
-import android.provider.Settings.SettingNotFoundException;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.accessibility.AccessibilityEvent;
-import android.widget.Button;
 import android.widget.TextView;
 
-import com.github.lzyzsd.circleprogress.ArcProgress;
-import com.liulishuo.magicprogresswidget.MagicProgressCircle;
-
 import java.util.List;
+
+import lava.retailcustomerclient.R;
+import lava.retailcustomerclient.UI.CustomerKitActivity;
+import lava.retailcustomerclient.UTILS.AppInfoObject;
 
 /**
  * Created by Mridul on 4/7/2016.
@@ -44,7 +35,7 @@ public class RetailAccessibilityService extends AccessibilityService {
 
 
     private static RetailAccessibilityService retailAccessibilityService;
-    List<AppInfo> appsList = null;
+    List<AppInfoObject> appsList = null;
 
 
     WindowManager wm = null;
@@ -119,6 +110,10 @@ public class RetailAccessibilityService extends AccessibilityService {
         */
 
         retailAccessibilityService = this;
+
+        Intent dialogIntent = new Intent(this, CustomerKitActivity.class);
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(dialogIntent);
     }
 
     @Override
@@ -130,7 +125,6 @@ public class RetailAccessibilityService extends AccessibilityService {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e(TAG, "ACC::onCreate: ");
     }
 
     @Override
@@ -140,7 +134,7 @@ public class RetailAccessibilityService extends AccessibilityService {
 
 
 
-    public void startProgressOverlay (List<AppInfo> foreignappsList) {
+    public void startProgressOverlay (List<AppInfoObject> foreignappsList) {
 
 
         appsList = foreignappsList;

@@ -1,10 +1,7 @@
-package lava.retailcustomerclient;
+package lava.retailcustomerclient.UI;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,17 +12,19 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.net.URL;
 import java.util.List;
+
+import lava.retailcustomerclient.R;
+import lava.retailcustomerclient.UTILS.AppInfoObject;
 
 public class GridViewAdapter extends BaseAdapter {
 
     private Context context;
-    private List<AppInfo> a;
+    private List<AppInfoObject> a;
     private static int i = 0;
     private Activity activity;
 
-    public GridViewAdapter(Activity activity, Context c, List<AppInfo> appsList) {
+    public GridViewAdapter(Activity activity, Context c, List<AppInfoObject> appsList) {
         context = c;
         a = appsList;
         this.activity = activity;

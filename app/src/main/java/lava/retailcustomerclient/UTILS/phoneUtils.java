@@ -1,4 +1,4 @@
-package lava.retailcustomerclient;
+package lava.retailcustomerclient.UTILS;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
@@ -14,24 +14,27 @@ import android.view.accessibility.AccessibilityManager;
 
 import java.util.List;
 
+import lava.retailcustomerclient.UTILS.DeviceInfoObject;
+
 /**
  * Created by Mridul on 4/5/2016.
  */
 
 
 
-public class Utils {
+public class phoneUtils {
 
     Context context;
-    public Utils(Context mContext) {
+    public phoneUtils(Context mContext) {
         this.context = mContext;
     }
 
-    public DeviceInfo getDeviceInfo() {
+    public DeviceInfoObject getDeviceInfo() {
 
 /*
         public String IMEI;
         public String android_id;
+        public String gcm_id;
         public String brand;
         public String product;
         public String model;
@@ -41,12 +44,13 @@ public class Utils {
         public long timestamp;
 */
 
-        DeviceInfo devInfo = new DeviceInfo();
+        DeviceInfoObject devInfo = new DeviceInfoObject();
 
         TelephonyManager telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
 
         devInfo.IMEI = telephonyManager.getDeviceId();
         devInfo.android_id = Settings.System.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        devInfo.gcm_id = "Check with Saurabh";
         devInfo.manufacturer = Build.MANUFACTURER;
         devInfo.product = Build.PRODUCT;
         devInfo.model = Build.MODEL;

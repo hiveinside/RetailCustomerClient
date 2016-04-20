@@ -19,7 +19,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".CustomerKitActivity"
+            android:name=".UI.CustomerKitActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".RetailAccessibilityService"
+        <service android:name=".SERVICES.RetailAccessibilityService"
             android:enabled="true"
             android:label="@string/accessibility_service"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -42,7 +42,7 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".InstallReceiver">
+        <receiver android:name=".SERVICES.InstallReceiver">
             <intent-filter >
                 <category android:name="android.intent.category.DEFAULT" />
                 <action android:name="android.intent.action.PACKAGE_ADDED"  />
