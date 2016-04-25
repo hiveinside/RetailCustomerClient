@@ -1,4 +1,4 @@
-package lava.retailcustomerclient.SERVICES;
+package lava.retailcustomerclient.services;
 
 import android.accessibilityservice.AccessibilityService;
 import android.content.Intent;
@@ -17,8 +17,8 @@ import android.widget.TextView;
 import java.util.List;
 
 import lava.retailcustomerclient.R;
-import lava.retailcustomerclient.UI.CustomerKitActivity;
-import lava.retailcustomerclient.UTILS.AppInfoObject;
+import lava.retailcustomerclient.ui.CustomerKitActivity;
+import lava.retailcustomerclient.utils.AppInfoObject;
 
 /**
  * Created by Mridul on 4/7/2016.

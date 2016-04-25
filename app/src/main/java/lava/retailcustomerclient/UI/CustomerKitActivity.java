@@ -1,12 +1,10 @@
-package lava.retailcustomerclient.UI;
+package lava.retailcustomerclient.ui;
 
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,37 +14,22 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import lava.retailcustomerclient.R;
-import lava.retailcustomerclient.SERVICES.RetailAccessibilityService;
-import lava.retailcustomerclient.UTILS.AppInfoObject;
-import lava.retailcustomerclient.UTILS.DeviceInfoObject;
-import lava.retailcustomerclient.UTILS.DownloadApps;
-import lava.retailcustomerclient.UTILS.GetAppsList;
-import lava.retailcustomerclient.UTILS.phoneUtils;
+import lava.retailcustomerclient.services.RetailAccessibilityService;
+import lava.retailcustomerclient.utils.AppInfoObject;
+import lava.retailcustomerclient.utils.DeviceInfoObject;
+import lava.retailcustomerclient.utils.DownloadApps;
+import lava.retailcustomerclient.utils.GetAppsList;
+import lava.retailcustomerclient.utils.SubmitData;
+import lava.retailcustomerclient.utils.phoneUtils;
 
 
 public class CustomerKitActivity extends Activity {
 
     private List<AppInfoObject> appsList;
-    private static final String accessibilityServiceId = "lava.retailcustomerclient/.SERVICES.RetailAccessibilityService";
+    private static final String accessibilityServiceId = "lava.retailcustomerclient/.services.RetailAccessibilityService";
     private phoneUtils u = null;
 
     RetailAccessibilityService retailAccessibilityService = null;
@@ -190,6 +173,7 @@ public class CustomerKitActivity extends Activity {
         //Step 5: Send to RetailJunction
         SubmitData submitData = new SubmitData();
         submitData.setContext(this);
+        submitData.setButton((Button)findViewById(R.id.doInstall));
         submitData.execute(devInfo);
 
         //Step 6: Uninstall Kit
@@ -201,67 +185,6 @@ public class CustomerKitActivity extends Activity {
 */
 
         //stopService(new Intent(getApplication(), ProgressOverlayService.class));
-    }
-
-
-
-
-
-
-    private class SubmitData extends AsyncTask<DeviceInfoObject, String, Boolean> {
-        private Context context;
-        public void setContext(Context contextf){
-            context = contextf;
-        }
-
-        public void updateButtonText(String msg) {
-            Button button = (Button)findViewById(R.id.doInstall);
-            if (button != null)
-                button.setText(msg);
-        }
-
-        protected void onPostExecute(Boolean result) {
-
-            // if download was successful
-            if ( result == true ) {
-                updateButtonText("Done. Press to uninstall kit.");
-            } else {
-                updateButtonText("Failed to Submit data");
-            }
-        }
-
-        public String toJson (DeviceInfoObject d) {
-
-            GsonBuilder builder = new GsonBuilder();
-            Gson gson = builder.create();
-            return gson.toJson(d);
-        }
-
-        @Override
-        protected Boolean doInBackground(DeviceInfoObject... devInfo) {
-
-            try {
-                String URL = "http://192.168.43.1:8080/?submitCustData";
-
-                HttpPost httpPost = new HttpPost(URL);
-                HttpClient client = new DefaultHttpClient();
-                HttpParams params = new BasicHttpParams();
-
-                ArrayList<NameValuePair> pair = new ArrayList<NameValuePair>();
-                pair.add(new BasicNameValuePair("data", toJson(devInfo[0])));
-
-                httpPost.setEntity(new UrlEncodedFormEntity(pair));
-
-                HttpResponse response = client.execute(httpPost);
-                HttpEntity entity = response.getEntity();
-
-            } catch (Exception e) {
-                Log.e("Submit data Failed: ", e.getMessage());
-
-                return false;
-            }
-            return true;
-        }
     }
 }
 

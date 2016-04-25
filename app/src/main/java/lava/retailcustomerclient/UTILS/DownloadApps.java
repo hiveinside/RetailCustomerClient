@@ -1,4 +1,4 @@
-package lava.retailcustomerclient.UTILS;
+package lava.retailcustomerclient.utils;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,8 +14,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
-
-import lava.retailcustomerclient.UTILS.AppInfoObject;
 
 /**
  * Created by Mridul on 4/20/2016.

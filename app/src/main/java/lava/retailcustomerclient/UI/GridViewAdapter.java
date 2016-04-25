@@ -1,4 +1,4 @@
-package lava.retailcustomerclient.UI;
+package lava.retailcustomerclient.ui;
 
 import android.app.Activity;
 import android.content.Context;
@@ -15,7 +15,7 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 import lava.retailcustomerclient.R;
-import lava.retailcustomerclient.UTILS.AppInfoObject;
+import lava.retailcustomerclient.utils.AppInfoObject;
 
 public class GridViewAdapter extends BaseAdapter {
 

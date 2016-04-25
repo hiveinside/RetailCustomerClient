@@ -1,4 +1,4 @@
-package lava.retailcustomerclient.UTILS;
+package lava.retailcustomerclient.utils;
 
 import java.util.Date;
 

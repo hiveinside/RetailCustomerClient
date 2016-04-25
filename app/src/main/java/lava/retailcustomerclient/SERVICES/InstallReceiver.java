@@ -1,4 +1,4 @@
-package lava.retailcustomerclient.SERVICES;
+package lava.retailcustomerclient.services;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package lava.retailcustomerclient.UTILS;
+package lava.retailcustomerclient.utils;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -50,7 +50,7 @@ public class GetAppsList extends AsyncTask<Void, Void, List<AppInfoObject>> {
 
         try
         {
-            URL appsListURL = new URL ("http://192.168.43.1:8080/?getAppsList");
+            URL appsListURL = new URL ("http://192.168.43.1:8888/?getAppsList");
             String responseText="";
 
             // Create Request to server and get response
