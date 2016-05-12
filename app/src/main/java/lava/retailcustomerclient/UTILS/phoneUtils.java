@@ -8,6 +8,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
@@ -20,14 +21,15 @@ import java.util.List;
 
 
 
-public class phoneUtils {
+public class PhoneUtils {
 
-    Context context;
-    public phoneUtils(Context mContext) {
+    static Context context;
+
+    public PhoneUtils(Context mContext) {
         this.context = mContext;
     }
 
-    public DeviceInfoObject getDeviceInfo() {
+    public static DeviceInfoObject getDeviceInfo() {
 
         /*
         public String imei; // take care of multiple SIM case
@@ -121,7 +123,7 @@ public class phoneUtils {
         return devInfo;
     }
 
-    public boolean isAccessibilityEnabled(Context mContext, String id) {
+    public static boolean isAccessibilityEnabled(Context mContext, String id) {
 
         AccessibilityManager am = (AccessibilityManager) mContext
                 .getSystemService(Context.ACCESSIBILITY_SERVICE);
@@ -129,9 +131,10 @@ public class phoneUtils {
         List<AccessibilityServiceInfo> runningServices = am
                 .getEnabledAccessibilityServiceList(AccessibilityEvent.TYPES_ALL_MASK);
         for (AccessibilityServiceInfo service : runningServices) {
-                if (id.equals(service.getId())) {
-                        return true;
-                }
+            Log.d("Accessibility:", service.getId());
+            if (id.equals(service.getId())) {
+                return true;
+            }
         }
         return false;
     }

@@ -69,7 +69,7 @@ public class GridViewAdapter extends BaseAdapter {
             view = (ViewHolder) convertView.getTag();
         }
 
-        view.txtViewName.setText(a.get(position).AppName);
+        view.txtViewName.setText(a.get(position).appName);
         Picasso.with(context).load(a.get(position).iconUrl).into(view.imgViewIcon);
 
         return convertView;

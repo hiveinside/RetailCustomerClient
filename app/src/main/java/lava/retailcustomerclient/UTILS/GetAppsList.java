@@ -50,7 +50,7 @@ public class GetAppsList extends AsyncTask<Void, Void, List<AppInfoObject>> {
 
         try
         {
-            URL appsListURL = new URL ("http://192.168.43.1:8888/?getAppsList");
+            URL appsListURL = new URL (Constants.getAppsListURL);
             String responseText="";
 
             // Create Request to server and get response

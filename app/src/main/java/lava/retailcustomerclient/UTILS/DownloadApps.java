@@ -99,7 +99,7 @@ public class DownloadApps extends AsyncTask<List<AppInfoObject>, String, List<Ap
                 }
                 FileOutputStream fos = new FileOutputStream(outputFile);
 
-                publishProgress("" + appsList[0].get(i).AppName);
+                publishProgress("" + appsList[0].get(i).appName);
                 byte[] buffer = new byte[1024];
                 int count = 0;
                 int total = 0;
@@ -108,7 +108,7 @@ public class DownloadApps extends AsyncTask<List<AppInfoObject>, String, List<Ap
 
                     total += count;
                     if(fileLength > 0)
-                        publishProgress("" + appsList[0].get(i).AppName +
+                        publishProgress("" + appsList[0].get(i).appName +
                                 " (" + (total * 100 / fileLength) + "%)");
                 }
                 fos.close();
