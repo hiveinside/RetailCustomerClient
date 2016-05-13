@@ -2,11 +2,15 @@ package lava.retailcustomerclient.ui;
 
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -20,8 +24,7 @@ import com.liulishuo.filedownloader.BaseDownloadTask;
 import java.util.List;
 
 import lava.retailcustomerclient.R;
-import lava.retailcustomerclient.services.InstallReceiver;
-import lava.retailcustomerclient.services.ProgressOverlayService;
+import lava.retailcustomerclient.services.APKInstallCheckService;
 import lava.retailcustomerclient.services.RetailAccessibilityService;
 import lava.retailcustomerclient.utils.AppDownloader;
 import lava.retailcustomerclient.utils.AppInfoObject;
@@ -37,7 +40,8 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     int downloadCount = 0;
     Button installButton;
 
-
+    APKInstallCheckService apkInstallCheckService;
+    boolean mBound = false;
 
     RetailAccessibilityService retailAccessibilityService = null;
 
@@ -53,13 +57,25 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         if (appsList != null) {
             setGridAdapter();
         }
+
+        // Bind to LocalService
+        Intent intent = new Intent(this, APKInstallCheckService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE); // dont autocreate
+
+        if (mBound) {
+            // Call a method from the LocalService.
+            // However, if this call were something that might hang, then this request should
+            // occur in a separate thread to avoid slowing down the activity performance.
+
+            apkInstallCheckService.getStatus();
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        startService(new Intent(CustomerKitActivity.this, ProgressOverlayService.class));
+        //startService(new Intent(CustomerKitActivity.this, APKInstallCheckService.class));
         startProcess();
     }
 
@@ -106,7 +122,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
                 GetAppsList g = new GetAppsList();
                 g.setContext(this);
                 try {
-                    //.get makes is blocking
+                    //.get makes it blocking
                     // // TODO: 5/11/2016 make this unblocking. http error can cause UI hang
                     appsList = g.execute().get();
 
@@ -214,7 +230,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         startActivity(intent);
 */
 
-        //stopService(new Intent(getApplication(), ProgressOverlayService.class));
+        //stopService(new Intent(getApplication(), APKInstallCheckService.class));
     }
 
     public void updateButtonText(String msg) {
@@ -237,8 +253,15 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             ShowToast("All apk's downloaded.");
 
 
-            AppInstaller a = new AppInstaller(this);
-            a.installApps(appsList);
+            //AppInstaller a = new AppInstaller(this);
+            //a.installApps(appsList);
+
+
+            // Bind to LocalService - AUTO CREATE
+            Intent intent = new Intent(this, APKInstallCheckService.class);
+            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+            apkInstallCheckService.installApps(appsList);
 
             //enable installButton again when everything is done
             installButton.setEnabled(true);
@@ -258,9 +281,38 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
 
     }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            APKInstallCheckService.LocalBinder binder = (APKInstallCheckService.LocalBinder) service;
+            apkInstallCheckService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
 }
 

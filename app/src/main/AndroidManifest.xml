@@ -45,7 +45,15 @@
             </intent-filter>
         </service>
 
-        <service android:name=".services.ProgressOverlayService"/>
+        <service android:name=".services.APKInstallCheckService"/>
+
+        <receiver android:name=".services.InstallReceiver">
+            <intent-filter >
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.PACKAGE_ADDED"  />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
 
     </application>
 </manifest>

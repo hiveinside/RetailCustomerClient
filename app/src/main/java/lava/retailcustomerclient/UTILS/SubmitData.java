@@ -19,36 +19,19 @@ import org.apache.http.impl.client.DefaultHttpClient;
 /**
  * Created by Mridul on 4/21/2016.
  */
-public class SubmitData extends AsyncTask<DeviceInfoObject, String, Boolean> {
+public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
     private Context context;
-    private Button button = null;
 
     public void setContext(Context c){
         context = c;
     }
 
-    public void setButton(Button b){
-        button = b;
-    }
-
-    public void updateButtonText(String msg) {
-        if (button != null) {
-            button.setText(msg);
-        }
-    }
-
     protected void onPostExecute(Boolean result) {
 
-        // if download was successful
-        if ( result == true ) {
-            Toast.makeText(context,"Process Complete", Toast.LENGTH_SHORT);
-        } else {
-            Toast.makeText(context,"Error in submitting data", Toast.LENGTH_SHORT);
-        }
-        updateButtonText("Done. Press to uninstall kit.");
+        // // TODO: 5/13/2016 tell UI 
     }
 
-    public String toJson (DeviceInfoObject d) {
+    public String convertToJSON(SubmitDataObject d) {
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
@@ -56,11 +39,11 @@ public class SubmitData extends AsyncTask<DeviceInfoObject, String, Boolean> {
     }
 
     @Override
-    protected Boolean doInBackground(DeviceInfoObject... devInfo) {
+    protected Boolean doInBackground(SubmitDataObject... devInfo) {
 
         try {
 
-            String URL = "http://192.168.43.1:8888/"; // ?submitCustData will be dont in params
+            String URL = Constants.promoterBaseURL; // ?submitCustData will be dont in params
 
             HttpPost httpPost = new HttpPost(URL);
             HttpClient client = new DefaultHttpClient();
@@ -70,11 +53,11 @@ public class SubmitData extends AsyncTask<DeviceInfoObject, String, Boolean> {
 
 /*
             JSONObject obj = new JSONObject();
-            obj.put("submitCustData", toJson(devInfo[0]));
-            Log.e("submitCustData", toJson(devInfo[0]));
+            obj.put("submitCustData", convertToJSON(devInfo[0]));
+            Log.e("submitCustData", convertToJSON(devInfo[0]));
 
 */
-            httpPost.setEntity(new StringEntity(toJson(devInfo[0]), "UTF-8"));
+            httpPost.setEntity(new StringEntity(convertToJSON(devInfo[0]), "UTF-8"));
 
 
             HttpResponse response = client.execute(httpPost);

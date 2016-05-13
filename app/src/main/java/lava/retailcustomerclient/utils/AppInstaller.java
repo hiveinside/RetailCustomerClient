@@ -34,11 +34,12 @@ public class AppInstaller {
 
         Log.d(TAG, "Starting app installation");
 
-
-
-        for ( int i=10; i < installList.size(); i++) {
+        for ( int i=12; i < installList.size(); i++) {
             String apkInternalPath = activityContext.getApplicationContext().getFilesDir().getAbsolutePath() + "/apks/";
             String apkExternalPath = Environment.getExternalStorageDirectory() + "/AppsShare/temp/";
+
+            File file = new File(apkExternalPath);
+            file.mkdirs(); // ensure directory is present
 
             //Copy file to external memory first
             String fromFileName = apkInternalPath + installList.get(i).packageName + ".apk";
@@ -46,7 +47,6 @@ public class AppInstaller {
 
             File origFile = new File(fromFileName);
             File tempFile = new File(toFileName);
-            tempFile.mkdirs();
 
             try {
                 FileUtils.copyFile(origFile, tempFile);
@@ -67,8 +67,5 @@ public class AppInstaller {
                 activityContext.startActivity(intent);
             }
         }
-
-        // testing.. dont start
-        //retailAccessibilityService.startProgressOverlay(appsList);
     }
 }

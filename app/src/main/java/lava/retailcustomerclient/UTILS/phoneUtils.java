@@ -23,13 +23,8 @@ import java.util.List;
 
 public class PhoneUtils {
 
-    static Context context;
 
-    public PhoneUtils(Context mContext) {
-        this.context = mContext;
-    }
-
-    public static DeviceInfoObject getDeviceInfo() {
+    public static DeviceInfoObject getDeviceInfo(Context context) {
 
         /*
         public String imei; // take care of multiple SIM case

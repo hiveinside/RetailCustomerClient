@@ -14,17 +14,13 @@ import lava.retailcustomerclient.ui.CustomerKitActivity;
  */
 public class InstallReceiver extends BroadcastReceiver {
 
-    CustomerKitActivity activity;
+    public InstallReceiver() {
 
-    public InstallReceiver(CustomerKitActivity customerKitActivity) {
-        //This log will display in the logcat
-        Log.d("InstallReceiver", "InstallReceiver constructor called.");
-        this.activity = customerKitActivity;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        //String packageName = intent.getData().getEncodedSchemeSpecificPart();
+        String packageName = intent.getData().getEncodedSchemeSpecificPart();
 
 
         //This log never displays if the constructor is in or commented out
@@ -32,15 +28,10 @@ public class InstallReceiver extends BroadcastReceiver {
         if ((intent.getAction().equals("android.intent.action.PACKAGE_ADDED")) &&
                 (intent.getComponent().getPackageName().equals(context.getPackageName()))) {
             // success; include in data to send back
-            //Log.e("InstallReceiver", "Installed: " + packageName);
+            Log.e("InstallReceiver", "Installed: " + packageName);
 
+            APKInstallCheckService.onApkInstallDone(packageName);
 
         }
-    }
-
-    public interface ApkInstallCallback {
-        public void onApkInstallCompleted();
-
-        public void onApkInstallError();
     }
 }
