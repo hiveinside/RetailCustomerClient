@@ -3,7 +3,6 @@ package lava.retailcustomerclient.utils;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -15,21 +14,28 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONObject;
 
 /**
  * Created by Mridul on 4/21/2016.
  */
 public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
-    private Context context;
+    private Context serviceContext;
 
-    public void setContext(Context c){
-        context = c;
+    public SubmitData(Context serviceContext) {
+        this.serviceContext = serviceContext;
     }
 
     protected void onPostExecute(Boolean result) {
 
-        // // TODO: 5/13/2016 tell UI 
+        // // TODO: 5/13/2016 tell UI
+        if (result == true) {
+            Toast.makeText(serviceContext, "Data submitted", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(serviceContext, "Failed to submit data", Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     public String convertToJSON(SubmitDataObject d) {
 
@@ -39,11 +45,11 @@ public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
     }
 
     @Override
-    protected Boolean doInBackground(SubmitDataObject... devInfo) {
+    protected Boolean doInBackground(SubmitDataObject... custInfo) {
 
         try {
 
-            String URL = Constants.promoterBaseURL; // ?submitCustData will be dont in params
+            String URL = Constants.submitDataURL; // ?submitCustData will be dont in params
 
             HttpPost httpPost = new HttpPost(URL);
             HttpClient client = new DefaultHttpClient();
@@ -51,13 +57,11 @@ public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
             httpPost.setHeader("Content-type", "application/json");
             httpPost.setHeader("Accept", "application/json");
 
-/*
-            JSONObject obj = new JSONObject();
-            obj.put("submitCustData", convertToJSON(devInfo[0]));
-            Log.e("submitCustData", convertToJSON(devInfo[0]));
 
-*/
-            httpPost.setEntity(new StringEntity(convertToJSON(devInfo[0]), "UTF-8"));
+            //JSONObject obj = new JSONObject();
+            //obj.put("submitCustData", convertToJSON(custInfo[0]));
+
+            httpPost.setEntity(new StringEntity(convertToJSON(custInfo[0]), "UTF-8"));
 
 
             HttpResponse response = client.execute(httpPost);
@@ -65,7 +69,6 @@ public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
                 return false;
             }
             HttpEntity entity = response.getEntity();
-
             Log.e("submitCustData", entity.getContent().toString());
 
 

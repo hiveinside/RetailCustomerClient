@@ -6,6 +6,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.v4.BuildConfig;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -59,13 +60,14 @@ public class PhoneUtils {
 
         TelephonyManager telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
 
+        // TODO: 5/17/2016 get both/all IMEIs
         devInfo.imei = telephonyManager.getDeviceId();
         devInfo.android_device_id = Settings.System.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         devInfo.manufacturer = Build.BRAND; //Build.MANUFACTURER;
         devInfo.product = Build.PRODUCT;
         devInfo.model = Build.MODEL;
 
-        WifiManager manager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager manager = (WifiManager)context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = manager.getConnectionInfo();
         devInfo.mac_id = info.getMacAddress();
 
@@ -95,6 +97,7 @@ public class PhoneUtils {
         public String kitVersion;// kit app version
         */
 
+        // // TODO: 5/17/2016 get device info "check"
         devInfo.dpi = metrics.densityDpi;
         devInfo.os_version = Build.VERSION.RELEASE;
         devInfo.board_cpu = Build.BOARD;
@@ -106,14 +109,15 @@ public class PhoneUtils {
         devInfo.launcher_app = "Check"; //which launcher is used
         devInfo.phone_num = "Check"; // try to get phone number
         devInfo.android_api = Build.VERSION.SDK_INT;
-        devInfo.networkStatus = 0; //2g/3g/4g/wifi
-        devInfo.rooted_yes_no = 0; // rooted status
-        devInfo.internalAvail = 0; //available internal mem
-        devInfo.internalTotal = 0; //Total internal mem
-        devInfo.extAvail = 0; //available internal mem
-        devInfo.extTotal = 0; //Total external mem
-        devInfo.ramSize = 0; //RAM size
-        devInfo.kitVersion = "Check";// kit app version
+        devInfo.network_status= 0; //2g/3g/4g/wifi
+        devInfo.rooted = 0; // rooted status
+        devInfo.internal_avail= 0; //available internal mem
+        devInfo.internal_total = 0; //Total internal mem
+        devInfo.external_avail = 0; //available internal mem
+        devInfo.external_total = 0; //Total external mem
+        devInfo.ram = 0; //RAM size
+        devInfo.kit_version_code = BuildConfig.VERSION_CODE;// kit app version
+        devInfo.kit_version_name = BuildConfig.VERSION_NAME;// kit app version
 
         return devInfo;
     }

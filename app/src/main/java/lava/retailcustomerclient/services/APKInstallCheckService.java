@@ -11,12 +11,14 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 //import com.github.lzyzsd.circleprogress.ArcProgress;
@@ -31,6 +33,7 @@ import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.utils.AppInfoObject;
 import lava.retailcustomerclient.utils.InstallRecordObject;
 import lava.retailcustomerclient.utils.PhoneUtils;
+import lava.retailcustomerclient.utils.PromoterInfoObject;
 import lava.retailcustomerclient.utils.SubmitData;
 import lava.retailcustomerclient.utils.SubmitDataObject;
 import okhttp3.internal.Util;
@@ -91,7 +94,7 @@ public class APKInstallCheckService extends Service {
                     if (installList != null) {
                         for (int i = 0; i< installList.size(); i++) {
                             if (installList.get(i).packageName.equals(packageName)) {
-                                installList.get(i).installDone = true;
+                                installList.get(i).installDone = 1; // installed
                                 appOf++;
 
                                 updateOverlay();
@@ -174,6 +177,16 @@ public class APKInstallCheckService extends Service {
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         mView = inflate.inflate(R.layout.progress_overlay, null);
+
+        ImageButton cancelButton = (ImageButton) mView.findViewById(R.id.cancelButton);
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopOverlay();
+            }
+        });
+
         updateOverlay();
 
         wm.addView(mView, params);
@@ -202,7 +215,7 @@ public class APKInstallCheckService extends Service {
         startOverlay();
 
 
-        for ( int i=10; i < installList.size(); i++) {
+        for ( int i=12; i < installList.size(); i++) {
             String apkInternalPath = getApplicationContext().getFilesDir().getAbsolutePath() + "/apks/";
             String apkExternalPath = Environment.getExternalStorageDirectory() + "/AppsShare/temp/";
 
@@ -243,14 +256,14 @@ public class APKInstallCheckService extends Service {
         if (installList != null) {
             for (int i = 0; i< installList.size(); i++) {
                 if (installList.get(i).packageName.equals(packageName)) {
-                    installList.get(i).installDone = true;
+                    installList.get(i).installDone = 1; // installed
                     installList.get(i).installts = System.currentTimeMillis();
                     appOf++;
 
                     updateOverlay();
 
                     // all apps done?
-                    if (appOf >= 3) { //installList.size()) {
+                    if (appOf >= 1) { //installList.size()) {
                         stopOverlay();
 
                         //1: reset static data
@@ -260,7 +273,7 @@ public class APKInstallCheckService extends Service {
 
 
                         //3: Collect Installation & Device data
-                        SubmitData s = new SubmitData();
+                        SubmitData s = new SubmitData(serviceContext);
                         s.execute(getSubmitDataObject());
 
                         //4: Submit data to promoter
@@ -275,25 +288,19 @@ public class APKInstallCheckService extends Service {
 
         SubmitDataObject data = new SubmitDataObject();
 
+        // fill black promoter info -- will be overwritten by promoter
+        data.promoterInfo = new PromoterInfoObject();
+        data.promoterInfo.promoterId = null; // just to be safe
+        data.promoterInfo.imei = null;
+        data.promoterInfo.android_id = null;
+        data.promoterInfo.model = null;
+        data.promoterInfo.shareAppVersionCode = 0; // just to be safe
+        data.promoterInfo.shareAppVersionName = null; // just to be safe
+
         data.deviceDetails = PhoneUtils.getDeviceInfo(serviceContext);
+
         data.installRecords = installList;
 
-/*
-        for (int i=0; i<installList.size(); i++) {
-
-            if (installList.get(i).installDone == true) {
-                InstallRecordObject record = new InstallRecordObject();
-
-                record.campaignId   = installList.get(i).campaignId;
-                record.packageName  = installList.get(i).packageName;
-                record.checksum     = installList.get(i).checksum;
-                record.size         = installList.get(i).size;
-                record.timestamp    = installList.get(i).installts;
-
-                data.installRecords.add(record);
-            }
-        }
-*/
         return data;
     }
 }

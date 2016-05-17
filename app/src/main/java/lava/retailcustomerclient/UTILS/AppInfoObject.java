@@ -18,8 +18,9 @@ public class AppInfoObject {
 
     /* Fields for client */
     public boolean downloadDone; //used by client
-    public boolean installDone; //used by client
+    public int installDone; //used by client
     public long installts; //used by client
 }
+
 
 

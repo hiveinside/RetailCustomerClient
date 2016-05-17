@@ -10,6 +10,7 @@ public class SubmitDataObject {
 
     /* installer data - who did */
     // will be added by promoter
+    public PromoterInfoObject promoterInfo;
 
     /* Install records - what he did */
     public List<AppInfoObject> installRecords;

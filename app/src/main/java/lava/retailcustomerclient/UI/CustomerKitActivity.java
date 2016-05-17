@@ -100,7 +100,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         } else {
 
             // check if connected to right hotspot
-            WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 
             String currentSSID = wifiInfo.getSSID();
