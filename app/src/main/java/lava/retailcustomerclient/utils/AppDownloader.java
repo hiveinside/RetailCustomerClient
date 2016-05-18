@@ -41,7 +41,7 @@ public class AppDownloader {
         final List<BaseDownloadTask> tasks = new ArrayList<>();
 
         // Doing 3 installs only for quick testig
-        for (int i = 10; i < downloadList.size(); i++) {
+        for (int i=0; i < downloadList.size(); i++) {
             final String link = downloadList.get(i).apkUrl;
             final String destFile = APK_DIR + downloadList.get(i).packageName + ".apk"; // dont add .apk till completed + ".apk";
             Log.d(TAG, "download link: " + link + " " + destFile);

@@ -24,7 +24,7 @@ public class InstallReceiver extends BroadcastReceiver {
 
 
         //This log never displays if the constructor is in or commented out
-        Log.e("InstallReceiver", "Install detected: " + packageName + " " + intent.getAction());
+        //Log.e("InstallReceiver", "Install detected: " + packageName + " " + intent.getAction());
         if ((intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED)) &&
                 (intent.getComponent().getPackageName().equals(context.getPackageName()))) {
             // success; include in data to send back

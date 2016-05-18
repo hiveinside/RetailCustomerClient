@@ -249,7 +249,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         //updateButtonText("Completed " + ((AppInfoObject)task.getTag()).appName);
 
         // check if all are downloaded
-        if( downloadCount == appsList.size() - 10) {
+        if( downloadCount == appsList.size()) {
             ShowToast("All apk's downloaded.");
 
 
@@ -266,7 +266,6 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             //enable installButton again when everything is done
             installButton.setEnabled(true);
         }
-
     }
 
     @Override

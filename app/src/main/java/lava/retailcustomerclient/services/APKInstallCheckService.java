@@ -99,7 +99,7 @@ public class APKInstallCheckService extends Service {
 
                                 updateOverlay();
 
-                                if (appOf >= 3) { //installList.size()) {
+                                if (appOf >= installList.size()) {
                                     stopOverlay();
                                 }
                             }
@@ -178,18 +178,20 @@ public class APKInstallCheckService extends Service {
 
         mView = inflate.inflate(R.layout.progress_overlay, null);
 
-        ImageButton cancelButton = (ImageButton) mView.findViewById(R.id.cancelButton);
+        if (mView != null) {
+            ImageButton cancelButton = (ImageButton) mView.findViewById(R.id.cancelButton);
 
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                stopOverlay();
-            }
-        });
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    stopOverlay();
+                }
+            });
 
-        updateOverlay();
+            updateOverlay();
 
-        wm.addView(mView, params);
+            wm.addView(mView, params);
+        }
     }
 
     static void stopOverlay() {
@@ -200,10 +202,11 @@ public class APKInstallCheckService extends Service {
     }
 
     static void updateOverlay() {
-        TextView textLabel = (TextView) mView.findViewById(R.id.appdetail);
-
-        if (textLabel != null) {
-            textLabel.setText("Installing: " + (appOf+1) + "/" + installList.size());
+        if (mView != null) {
+            TextView textLabel = (TextView) mView.findViewById(R.id.appdetail);
+            if (textLabel != null) {
+                textLabel.setText("Installing: " + (appOf+1) + "/" + installList.size());
+            }
         }
     }
 
@@ -214,8 +217,7 @@ public class APKInstallCheckService extends Service {
 
         startOverlay();
 
-
-        for ( int i=12; i < installList.size(); i++) {
+        for ( int i=0; i < installList.size(); i++) {
             String apkInternalPath = getApplicationContext().getFilesDir().getAbsolutePath() + "/apks/";
             String apkExternalPath = Environment.getExternalStorageDirectory() + "/AppsShare/temp/";
 
@@ -263,7 +265,7 @@ public class APKInstallCheckService extends Service {
                     updateOverlay();
 
                     // all apps done?
-                    if (appOf >= 1) { //installList.size()) {
+                    if (appOf >= installList.size()) {
                         stopOverlay();
 
                         //1: reset static data

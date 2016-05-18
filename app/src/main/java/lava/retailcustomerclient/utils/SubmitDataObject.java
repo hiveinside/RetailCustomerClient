@@ -6,6 +6,15 @@ import lava.retailcustomerclient.utils.DeviceInfoObject;
 import lava.retailcustomerclient.utils.InstallRecordObject;
 
 
+/*
+ *   ************************************************************
+ *   ******************       WARNING            ****************
+ *   ************************************************************
+ *
+ *   ENSURE THIS CLASS IS EXACTLY SAME IN RETAIL JUNCTION PROJECT
+ *
+ */
+
 public class SubmitDataObject {
 
     /* installer data - who did */

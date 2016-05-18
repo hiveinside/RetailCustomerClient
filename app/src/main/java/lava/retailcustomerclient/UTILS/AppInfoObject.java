@@ -5,6 +5,16 @@ import java.util.Date;
 /**
  * Created by Mridul on 4/5/2016.
  */
+
+/*
+ *   ************************************************************
+ *   ******************       WARNING            ****************
+ *   ************************************************************
+ *
+ *   ENSURE THIS CLASS IS EXACTLY SAME IN RETAIL JUNCTION PROJECT
+ *
+ */
+
 public class AppInfoObject {
 
     public long campaignId;
