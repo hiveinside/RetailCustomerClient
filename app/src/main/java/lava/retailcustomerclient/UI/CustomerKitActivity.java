@@ -94,6 +94,8 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
                 @Override
                 public void onClick(View v) {
                     openAccessabilitySettings(v);
+                    // // TODO: 5/24/2016 check if you can bring existing activity to top
+                    finish();
                 }
             });
 
@@ -203,26 +205,6 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         //Step 1: Download Apps
         AppDownloader a = new AppDownloader(this);
         a.download(getApplicationContext().getFilesDir().getAbsolutePath(), appsList);
-
-        //Step 2: Install Apps - wait till all downloads complete.
-        // // TODO: 5/11/2016 or we will start install as soon as a apk is available? 
-
-        //Step 3: Collect install Data
-
-        //Step 4: Collect Phone info (IMEI, andoid id, brand, model, Resolution, MAC, timestamp, ...
-  /*      DeviceInfoObject devInfo;
-        devInfo = PhoneUtils.getDeviceInfo();
-*/
-        //Step 5: Send to RetailJunction
-/*        SubmitData submitData = new SubmitData();
-        submitData.setContext(this);
-        submitData.setButton(installButton);
-        submitData.execute(devInfo);*/
-
-
-        //Step 6: delete temp apk files
-
-        //Step 7: Uninstall Kit
 
 /*
         Intent intent = new Intent(Intent.ACTION_DELETE);

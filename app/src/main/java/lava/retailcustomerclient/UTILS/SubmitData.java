@@ -30,9 +30,9 @@ public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
 
         // // TODO: 5/13/2016 tell UI
         if (result == true) {
-            Toast.makeText(serviceContext, "Data submitted", Toast.LENGTH_SHORT).show();
+            Toast.makeText(serviceContext, "Data submitted", Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(serviceContext, "Failed to submit data", Toast.LENGTH_SHORT).show();
+            Toast.makeText(serviceContext, "Failed to submit data", Toast.LENGTH_LONG).show();
         }
     }
 

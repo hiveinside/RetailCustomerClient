@@ -112,7 +112,9 @@ public class RetailAccessibilityService extends AccessibilityService {
         retailAccessibilityService = this;
 
         Intent dialogIntent = new Intent(this, CustomerKitActivity.class);
-        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                            |Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                            |Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         startActivity(dialogIntent);
     }
 
