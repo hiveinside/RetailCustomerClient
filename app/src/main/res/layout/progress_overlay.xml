@@ -6,17 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#CC000000"
-    android:keepScreenOn="true"
-    android:onClick="openAccessabilitySettings">
+    android:keepScreenOn="true">
 
 
     <ProgressBar
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
         android:id="@+id/progressBar"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@+id/appdetail"/>
+        android:layout_marginTop="1dp"
+        android:layout_centerInParent="true"/>
 
 
     <TextView
@@ -29,8 +27,8 @@
         android:layout_centerHorizontal="true" />
 
     <ImageButton
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:id="@+id/cancelButton"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
@@ -47,6 +45,24 @@
         android:textSize="10dp"
         android:layout_below="@+id/cancelButton"
         android:layout_alignParentEnd="true" />
+
+    <com.github.glomadrian.dashedcircularprogress.DashedCircularProgress
+        android:id="@+id/simple"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        android:layout_centerInParent="true"
+
+        custom:external_color="#1affffff"
+        custom:base_color="#6effffff"
+        custom:min="0"
+        custom:max="999"
+        custom:progress_color="@color/abc_primary_text_material_dark"
+        custom:progress_icon="@drawable/ic_launcher"
+        custom:duration="3500"
+        >
+        //Put here any view you like to be inside progress bar
+
+    </com.github.glomadrian.dashedcircularprogress.DashedCircularProgress>
 
 
 </RelativeLayout>

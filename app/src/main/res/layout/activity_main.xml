@@ -31,7 +31,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/darkgreen"
+        android:background="@drawable/button"
         android:text="Love all, Start!"
         android:textColor="@color/white"
         android:textSize="13dp"
