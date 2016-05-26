@@ -22,7 +22,8 @@
         android:layout_height="wrap_content"
         android:text="Installing: "
         android:id="@+id/appdetail"
-        android:layout_gravity="center_horizontal"
+        android:textColor="@color/white"
+        android:gravity="center"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 

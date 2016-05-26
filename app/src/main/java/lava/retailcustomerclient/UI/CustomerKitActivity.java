@@ -60,6 +60,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
 
         // Bind to LocalService
         Intent intent = new Intent(this, APKInstallCheckService.class);
+        startService(intent);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE); // dont autocreate
 
         if (mBound) {
@@ -246,6 +247,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             apkInstallCheckService.installApps(appsList);
 
             //enable installButton again when everything is done
+            // // TODO: 5/26/2016 enable after all installs are done. not before. After enabling, change onClick()
             installButton.setEnabled(true);
         }
     }

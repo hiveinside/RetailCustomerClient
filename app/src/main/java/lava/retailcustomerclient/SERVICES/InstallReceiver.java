@@ -30,8 +30,11 @@ public class InstallReceiver extends BroadcastReceiver {
             // success; include in data to send back
             Log.e("InstallReceiver", "Installed: " + packageName);
 
-            APKInstallCheckService.onApkInstallDone(packageName);
-
+            //APKInstallCheckService.onApkInstallDone(packageName);
+            Intent i = new Intent(context, APKInstallCheckService.class);
+            i.setAction(intent.getAction());
+            i.putExtra("installed_package", packageName);
+            context.startService(i);
         }
     }
 }
