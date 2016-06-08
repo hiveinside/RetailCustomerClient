@@ -31,7 +31,7 @@ import lava.retailcustomerclient.utils.AppInfoObject;
 import lava.retailcustomerclient.utils.AppInstaller;
 import lava.retailcustomerclient.utils.Constants;
 import lava.retailcustomerclient.utils.GetAppsList;
-import lava.retailcustomerclient.utils.PhoneUtils;
+import lava.retailcustomerclient.deviceutils.PhoneUtils;
 
 
 public class CustomerKitActivity extends Activity implements AppDownloader.AppDownloadCallback {
