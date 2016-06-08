@@ -12,4 +12,7 @@ public class Constants {
     public static final String promoterBaseURL = "http://192.168.43.1:8888";
 
 
+    public static final String androidPackageInstallerPkg = "com.android.packageinstaller";
+
+
 }

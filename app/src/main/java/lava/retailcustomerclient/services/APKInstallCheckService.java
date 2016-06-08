@@ -26,10 +26,10 @@ import java.util.List;
 
 import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.utils.AppInfoObject;
-import lava.retailcustomerclient.utils.PhoneUtils;
 import lava.retailcustomerclient.utils.PromoterInfoObject;
 import lava.retailcustomerclient.utils.SubmitData;
 import lava.retailcustomerclient.utils.SubmitDataObject;
+import lava.retailcustomerclient.deviceutils.PhoneUtils;
 
 //import com.github.lzyzsd.circleprogress.ArcProgress;
 
@@ -141,6 +141,8 @@ public class APKInstallCheckService extends Service {
             wm.removeView(mView);
             mView = null;
         }
+
+        nextIndex = 0;
     }
 
     static void updateOverlay() {
@@ -242,7 +244,7 @@ public class APKInstallCheckService extends Service {
 
         SubmitDataObject data = new SubmitDataObject();
 
-        // fill black promoter info -- will be overwritten by promoter
+        // fill blank promoter info -- will be overwritten by promoter
         data.promoterInfo = new PromoterInfoObject();
         data.promoterInfo.promoterId = null; // just to be safe
         data.promoterInfo.imei = null;
