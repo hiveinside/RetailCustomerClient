@@ -1,13 +1,11 @@
-package lava.retailcustomerclient.services;
+package lava.retailcustomerclient.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.liulishuo.filedownloader.BaseDownloadTask;
-
-import lava.retailcustomerclient.ui.CustomerKitActivity;
+import lava.retailcustomerclient.services.APKInstallCheckService;
 
 /**
  * Created by Mridul on 4/12/2016.

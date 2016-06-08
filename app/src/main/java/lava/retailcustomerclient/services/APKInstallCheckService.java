@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.apache.commons.io.FileUtils;
@@ -25,11 +26,11 @@ import java.io.IOException;
 import java.util.List;
 
 import lava.retailcustomerclient.R;
+import lava.retailcustomerclient.deviceutils.PhoneUtils;
 import lava.retailcustomerclient.utils.AppInfoObject;
 import lava.retailcustomerclient.utils.PromoterInfoObject;
 import lava.retailcustomerclient.utils.SubmitData;
 import lava.retailcustomerclient.utils.SubmitDataObject;
-import lava.retailcustomerclient.deviceutils.PhoneUtils;
 
 //import com.github.lzyzsd.circleprogress.ArcProgress;
 
@@ -121,9 +122,9 @@ public class APKInstallCheckService extends Service {
         mView = inflate.inflate(R.layout.progress_overlay, null);
 
         if (mView != null) {
-            ImageButton cancelButton = (ImageButton) mView.findViewById(R.id.cancelButton);
+            ImageView cancelImage = (ImageView) mView.findViewById(R.id.cancelImage);
 
-            cancelButton.setOnClickListener(new View.OnClickListener() {
+            cancelImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     stopOverlay();

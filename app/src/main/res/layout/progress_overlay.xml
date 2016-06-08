@@ -27,25 +27,15 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
-    <ImageButton
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:id="@+id/cancelButton"
+    <ImageView
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:id="@+id/cancelImage"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:src="@drawable/cancelsquare"
         android:scaleType="fitCenter" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Double click to stop!"
-        android:id="@+id/textView"
-        android:textColor="@android:color/white"
-        android:textSize="10dp"
-        android:layout_below="@+id/cancelButton"
-        android:layout_alignParentEnd="true" />
 
     <com.github.glomadrian.dashedcircularprogress.DashedCircularProgress
         android:id="@+id/simple"
