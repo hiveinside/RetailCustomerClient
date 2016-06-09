@@ -50,7 +50,7 @@ public class PhoneUtils {
         devInfo.resolution = getDeviceResolution(context);
 
         // TODO: 5/17/2016 get device info "check"
-        devInfo.dpi = getDeviceDensity();
+        devInfo.dpi = getDeviceDensity(context);
         devInfo.os_version = Build.VERSION.RELEASE;
         devInfo.board_cpu = Build.BOARD;
         devInfo.device_id = "Check"; // // TODO: 6/7/2016 figure this
@@ -118,8 +118,8 @@ public class PhoneUtils {
         return metrics.heightPixels + "x" + metrics.widthPixels;
     }
 
-    private static int getDeviceDensity() {
-        DisplayMetrics metrics = new DisplayMetrics();
+    private static int getDeviceDensity(Context context) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();;
         return metrics.densityDpi;
     }
 
