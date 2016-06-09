@@ -7,32 +7,38 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.deviceutils.PhoneUtils;
+import lava.retailcustomerclient.ui.CustomerKitActivity;
 import lava.retailcustomerclient.utils.AppInfoObject;
 import lava.retailcustomerclient.utils.PromoterInfoObject;
 import lava.retailcustomerclient.utils.SubmitData;
 import lava.retailcustomerclient.utils.SubmitDataObject;
 
-//import com.github.lzyzsd.circleprogress.ArcProgress;
 
 /**
  * Created by Mridul on 4/12/2016.
@@ -40,6 +46,11 @@ import lava.retailcustomerclient.utils.SubmitDataObject;
 public class APKInstallCheckService extends Service {
     // Binder given to clients
     private final IBinder mBinder = new LocalBinder();
+    ArrayList<Messenger> mClients = new ArrayList<Messenger>(); // Keeps track of all current registered clients.
+    final Messenger serviceMessenger = new Messenger(new IncomingHandler());
+    public static final int MSG_REGISTER_CLIENT = 1001;
+    public static final int MSG_UNREGISTER_CLIENT = 1002;
+    public static final int MSG_COMMAND_FROM_UI = 1003;
 
     static WindowManager wm;
     static View mView;
@@ -49,6 +60,10 @@ public class APKInstallCheckService extends Service {
     static Context serviceContext;
 
     static private List<AppInfoObject> installList;
+
+    void ShowToast (String text) {
+        Toast.makeText(serviceContext, text, Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     public void onCreate() {
@@ -61,6 +76,7 @@ public class APKInstallCheckService extends Service {
 
         if (intent != null && Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
             onApkInstallDone(intent.getStringExtra("installed_package"));
+            sendMessageToUI(intent.getStringExtra("installed_package"));
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -75,8 +91,49 @@ public class APKInstallCheckService extends Service {
             // Return this instance of LocalService so clients can call public methods
             return APKInstallCheckService.this;
         }
+        public Messenger getMessenger() {
+            // Return this instance of LocalService so clients can call public methods
+            return serviceMessenger;
+        }
     }
 
+    class IncomingHandler extends Handler { // Handler of incoming messages from clients.
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_REGISTER_CLIENT:
+                    mClients.add(msg.replyTo);
+                    break;
+
+                case MSG_UNREGISTER_CLIENT:
+                    mClients.remove(msg.replyTo);
+                    break;
+
+                case MSG_COMMAND_FROM_UI:
+                    ShowToast(msg.toString());
+                    break;
+
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+    private void sendMessageToUI(String str) {
+        for (int i=0; i<mClients.size(); i++) {
+            try {
+                //Send data as a String
+                Bundle b = new Bundle();
+                b.putString("str1", "ab" + str + "cd");
+                Message msg = Message.obtain(null, CustomerKitActivity.MSG_UPDATE_PROGRESS);
+                msg.setData(b);
+                mClients.get(i).send(msg);
+            }
+            catch (RemoteException e) {
+                // The client is dead. Remove it from the list; we are going through the list from back to front so this is safe to do inside the loop.
+                mClients.remove(i);
+            }
+        }
+    }
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -87,11 +144,6 @@ public class APKInstallCheckService extends Service {
     public void onDestroy() {
 
         super.onDestroy();
-    }
-
-    /** method for clients */
-    public SubmitDataObject getStatus() {
-        return null;
     }
 
     void startOverlay() {

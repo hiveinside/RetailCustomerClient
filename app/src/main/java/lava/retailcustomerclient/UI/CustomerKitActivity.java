@@ -9,8 +9,11 @@ import android.content.ServiceConnection;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
-import android.os.Parcelable;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -28,7 +31,6 @@ import lava.retailcustomerclient.services.APKInstallCheckService;
 import lava.retailcustomerclient.services.RetailAccessibilityService;
 import lava.retailcustomerclient.utils.AppDownloader;
 import lava.retailcustomerclient.utils.AppInfoObject;
-import lava.retailcustomerclient.utils.AppInstaller;
 import lava.retailcustomerclient.utils.Constants;
 import lava.retailcustomerclient.utils.GetAppsList;
 import lava.retailcustomerclient.deviceutils.PhoneUtils;
@@ -41,7 +43,10 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     Button installButton;
 
     APKInstallCheckService apkInstallCheckService;
+    final Messenger activityMessenger = new Messenger(new IncomingHandler());
+    Messenger serviceMessenger = null;
     boolean mBound = false;
+    public static final int MSG_UPDATE_PROGRESS = 1000;
 
     RetailAccessibilityService retailAccessibilityService = null;
 
@@ -67,8 +72,6 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             // Call a method from the LocalService.
             // However, if this call were something that might hang, then this request should
             // occur in a separate thread to avoid slowing down the activity performance.
-
-            apkInstallCheckService.getStatus();
         }
     }
 
@@ -288,7 +291,17 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             APKInstallCheckService.LocalBinder binder = (APKInstallCheckService.LocalBinder) service;
             apkInstallCheckService = binder.getService();
+            serviceMessenger = binder.getMessenger();
             mBound = true;
+
+            try {
+                Message msg = Message.obtain(null, APKInstallCheckService.MSG_REGISTER_CLIENT);
+                msg.replyTo = activityMessenger;
+                serviceMessenger.send(msg);
+            }
+            catch (RemoteException e) {
+                // In this case the service has crashed before we could even do anything with it
+            }
         }
 
         @Override
@@ -297,5 +310,19 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         }
     };
 
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_UPDATE_PROGRESS:
+                    String msgText = msg.getData().getString("str1");
+                    ShowToast("MSG_UPDATE_PROGRESS: " + msgText);
+                    break;
+
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
 }
 
