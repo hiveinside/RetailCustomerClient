@@ -14,8 +14,6 @@ android {
         minSdkVersion 19
         targetSdkVersion 22
 
-        // versionCode 1
-        // versionName "1.0"
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
     }
@@ -23,6 +21,15 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable false
+            shrinkResources true
+            zipAlignEnabled true
+        }
+        debug {
+            versionNameSuffix ".debug"
+            debuggable true
+            shrinkResources true
+            minifyEnabled false
         }
     }
 }

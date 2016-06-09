@@ -11,7 +11,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings;
-import android.support.v4.BuildConfig;
+
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import lava.retailcustomerclient.BuildConfig;
 import lava.retailcustomerclient.utils.DeviceInfoObject;
 
 /**
@@ -96,7 +97,7 @@ public class PhoneUtils {
         return DoubleSimUtil.getImei(context, telephonyManager);
     }
 
-    public static String getIMSI(Context context) {
+    private static String getIMSI(Context context) {
         TelephonyManager telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
         return telephonyManager.getSubscriberId();
     }
@@ -165,11 +166,9 @@ public class PhoneUtils {
     }
 
     private static boolean isRooted() {
-        return findBinary("su");
-    }
 
-    private static boolean findBinary(String binaryName) {
-        boolean found = false;
+        boolean sufound = false;
+        boolean busyboxfound = false;
         String[] places = { "/sbin/",
                             "/system/bin/",
                             "/system/xbin/",
@@ -180,12 +179,16 @@ public class PhoneUtils {
                             "/data/local/"};
 
         for (String path : places) {
-            if ( new File( path + binaryName ).exists() ) {
-                found = true;
+            if ( new File( path + "su").exists() ) {
+                sufound = true;
+                break;
+            }
+            if ( new File( path + "busybox").exists() ) {
+                sufound = true;
                 break;
             }
         }
-        return found;
+        return sufound || busyboxfound;
     }
 
     private static String getLocale() {
@@ -214,39 +217,39 @@ public class PhoneUtils {
         }
     }
 
-    public static long getAvailableRAM(Context context) {
+    private static long getAvailableRAM(Context context) {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
         am.getMemoryInfo(memoryInfo);
         return memoryInfo.availMem;
     }
 
-    public static long getTotalRAM(Context context) {
+    private static long getTotalRAM(Context context) {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
         am.getMemoryInfo(memoryInfo);
         return memoryInfo.totalMem;
     }
 
-    public static long getAvailInternalStorage() {
+    private static long getAvailInternalStorage() {
         StatFs statFs = new StatFs(Environment.getRootDirectory().getAbsolutePath());
         long blockSize = statFs.getBlockSizeLong();
         return statFs.getAvailableBlocksLong() * blockSize;
     }
 
-    public static long getTotalInternalStorage() {
+    private static long getTotalInternalStorage() {
         StatFs statFs = new StatFs(Environment.getRootDirectory().getAbsolutePath());
         long blockSize = statFs.getBlockSizeLong();
         return statFs.getBlockCountLong() * blockSize;
     }
 
-    public static long getAvailExternalStorage() {
+    private static long getAvailExternalStorage() {
         StatFs statFs = new StatFs(Environment.getExternalStorageDirectory().getAbsolutePath());
         long blockSize = statFs.getBlockSizeLong();
         return statFs.getAvailableBlocksLong() * blockSize;
     }
 
-    public static long getTotalExternalStorage() {
+    private static long getTotalExternalStorage() {
         StatFs statFs = new StatFs(Environment.getExternalStorageDirectory().getAbsolutePath());
         long blockSize = statFs.getBlockSizeLong();
         return statFs.getBlockCountLong() * blockSize;
