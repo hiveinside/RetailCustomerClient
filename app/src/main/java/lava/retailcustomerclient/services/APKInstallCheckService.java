@@ -35,6 +35,7 @@ import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.deviceutils.PhoneUtils;
 import lava.retailcustomerclient.ui.CustomerKitActivity;
 import lava.retailcustomerclient.utils.AppInfoObject;
+import lava.retailcustomerclient.utils.ProcessState;
 import lava.retailcustomerclient.utils.PromoterInfoObject;
 import lava.retailcustomerclient.utils.SubmitData;
 import lava.retailcustomerclient.utils.SubmitDataObject;
@@ -76,7 +77,7 @@ public class APKInstallCheckService extends Service {
 
         if (intent != null && Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
             onApkInstallDone(intent.getStringExtra("installed_package"));
-            sendMessageToUI(intent.getStringExtra("installed_package"));
+            //sendMessageToUI(intent.getStringExtra("installed_package"));
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -124,7 +125,7 @@ public class APKInstallCheckService extends Service {
                 //Send data as a String
                 Bundle b = new Bundle();
                 b.putString("str1", "ab" + str + "cd");
-                Message msg = Message.obtain(null, CustomerKitActivity.MSG_UPDATE_PROGRESS);
+                Message msg = Message.obtain(null, CustomerKitActivity.MSG_UPDATE_UI);
                 msg.setData(b);
                 mClients.get(i).send(msg);
             }
@@ -214,6 +215,8 @@ public class APKInstallCheckService extends Service {
             Log.d("installApps", "Starting app installation");
             return;
         }
+
+        ProcessState.setState(ProcessState.STATE_INSTALLING_APKS);
         Log.d("installApps", "Starting app installation");
 
         startOverlay();
@@ -251,7 +254,7 @@ public class APKInstallCheckService extends Service {
 
             ComponentName c;
 
-            Intent intent = new Intent(Intent.ACTION_VIEW);
+            Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
             intent.setDataAndType(Uri.fromFile(tempFile), "application/vnd.android.package-archive");
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
             //intent.setComponent(new ComponentName(activityContext.getPackageName(), "AppInstaller"));
@@ -271,7 +274,8 @@ public class APKInstallCheckService extends Service {
             nextIndex++;
 
             // all apps done?
-            if (nextIndex >= installList.size()) {
+            if (nextIndex >= installList.size()-3) {
+                ProcessState.setState(ProcessState.STATE_DONE_INSTALLING_APKS);
                 stopOverlay();
 
                 //1: reset static data
@@ -281,6 +285,7 @@ public class APKInstallCheckService extends Service {
 
 
                 //3: Collect Installation & Device data
+                ProcessState.setState(ProcessState.STATE_COLLECTING_DEVICE_DATA);
                 SubmitData s = new SubmitData(serviceContext);
                 s.execute(getSubmitDataObject());
 
@@ -309,6 +314,9 @@ public class APKInstallCheckService extends Service {
         data.deviceDetails = PhoneUtils.getDeviceInfo(serviceContext);
 
         data.installRecords = installList;
+
+        ProcessState.setState(ProcessState.STATE_DONE_COLLECTING_DEVICE_DATA);
+
 
         return data;
     }

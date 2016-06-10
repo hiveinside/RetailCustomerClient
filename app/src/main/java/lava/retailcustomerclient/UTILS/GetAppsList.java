@@ -35,9 +35,8 @@ public class GetAppsList extends AsyncTask<Void, Void, List<AppInfoObject>> {
 
     protected void onPostExecute(List<AppInfoObject> list) {
 
+        ProcessState.setState(ProcessState.STATE_DONE_GETTING_APPSLIST);
 
-        // ShowToast(message);
-        // Grid view
         if (list == null) {
             return;
         }

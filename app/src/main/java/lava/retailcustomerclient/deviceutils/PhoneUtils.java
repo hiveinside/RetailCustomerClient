@@ -133,7 +133,7 @@ public class PhoneUtils {
         return telephonyManager.getLine1Number();
     }
 
-    private static int getSdkVersion() {
+    public static int getSdkVersion() {
         return Build.VERSION.SDK_INT;
     }
 

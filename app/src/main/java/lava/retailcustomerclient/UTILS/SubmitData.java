@@ -28,11 +28,13 @@ public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
 
     protected void onPostExecute(Boolean result) {
 
+        ProcessState.setState(ProcessState.STATE_DONE_SUBMITTING_DATA);
+
         // // TODO: 5/13/2016 tell UI
         if (result == true) {
             Toast.makeText(serviceContext, "Data submitted", Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(serviceContext, "Failed to submit data", Toast.LENGTH_LONG).show();
+            Toast.makeText(serviceContext, "Failed to submit data. Process not completed.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -48,6 +50,7 @@ public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
     protected Boolean doInBackground(SubmitDataObject... custInfo) {
 
         try {
+            ProcessState.setState(ProcessState.STATE_SUBMITTING_DATA);
 
             String URL = Constants.submitDataURL; // ?submitCustData will be dont in params
 
@@ -74,6 +77,7 @@ public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
 
         } catch (Exception e) {
             Log.e("Submit data Failed: ", e.getMessage());
+            // TODO: 6/10/2016 Give retry option... dont lose collected data
 
             return false;
         }
