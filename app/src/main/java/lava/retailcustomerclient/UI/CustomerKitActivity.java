@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -28,12 +29,12 @@ import java.util.List;
 
 import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.services.APKInstallCheckService;
-import lava.retailcustomerclient.services.RetailAccessibilityService;
 import lava.retailcustomerclient.utils.AppDownloader;
 import lava.retailcustomerclient.utils.AppInfoObject;
 import lava.retailcustomerclient.utils.Constants;
 import lava.retailcustomerclient.utils.GetAppsList;
 import lava.retailcustomerclient.deviceutils.PhoneUtils;
+import lava.retailcustomerclient.utils.ProcessState;
 
 
 public class CustomerKitActivity extends Activity implements AppDownloader.AppDownloadCallback {
@@ -46,9 +47,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     final Messenger activityMessenger = new Messenger(new IncomingHandler());
     Messenger serviceMessenger = null;
     boolean mBound = false;
-    public static final int MSG_UPDATE_PROGRESS = 1000;
-
-    RetailAccessibilityService retailAccessibilityService = null;
+    public static final int MSG_UPDATE_UI = 1000;
 
 
     void ShowToast (String text) {
@@ -73,6 +72,8 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             // However, if this call were something that might hang, then this request should
             // occur in a separate thread to avoid slowing down the activity performance.
         }
+
+        UpdateUI();
     }
 
     @Override
@@ -80,6 +81,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         super.onCreate(savedInstanceState);
 
         //startService(new Intent(CustomerKitActivity.this, APKInstallCheckService.class));
+        ProcessState.setState(ProcessState.STATE_NOT_STARTED);
         startProcess();
     }
 
@@ -116,41 +118,18 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
            // if(currentSSID.compareToIgnoreCase(Constants.wifiSSID))
             if (currentSSID.equals("\"" + Constants.wifiSSID + "\"")) {
 
+                ProcessState.setState(ProcessState.STATE_CONNECTED);
                 setContentView(R.layout.activity_main);
                 installButton = (Button) findViewById(R.id.doInstall);
-
-                retailAccessibilityService = RetailAccessibilityService.getSharedInstance();
 
                 TextView statusText = (TextView)findViewById(R.id.statusText);
                 statusText.setText("Connected to: " + currentSSID);
 
-                // get apps list from Promoter's phone
-                GetAppsList g = new GetAppsList();
-                g.setContext(this);
-                try {
-                    //.get makes it blocking
-                    // // TODO: 5/11/2016 make this unblocking. http error can cause UI hang
-                    appsList = g.execute().get();
-
-                    // update grid
-                    if (appsList != null) {
-                        setGridAdapter();
-
-                        installButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                doCompleteProcess();
-                            }
-                        });
-
-                    } else {
-                        // no apps. // TODO: 5/11/2016 handle error 
-                    }
-                } catch (Exception ee) {
-                    installButton.setText("Failed to get appslist");
-                }
+                fetchAppsList();
 
             } else {
+
+                ProcessState.setState(ProcessState.STATE_NOT_STARTED);
 
                 TextView infoText = (TextView)findViewById(R.id.infoText);
                 infoText.setText("Not connected to " + Constants.wifiSSID);
@@ -168,6 +147,39 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             }
         }
     }
+
+    private void fetchAppsList() {
+
+        // get apps list from Promoter's phone
+        GetAppsList g = new GetAppsList();
+        g.setContext(this);
+        try {
+            //.get makes it blocking
+            // // TODO: 5/11/2016 make this unblocking. http error can cause UI hang
+            ProcessState.setState(ProcessState.STATE_GETTING_APPSLIST);
+            appsList = g.execute().get();
+
+            // update grid
+            if (appsList != null) {
+                setGridAdapter();
+
+                installButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        doCompleteProcess();
+                    }
+                });
+
+            } else {
+                // no apps. // TODO: 5/11/2016 handle error
+                ShowToast("No apps found");
+            }
+        } catch (Exception ee) {
+            ProcessState.setState(ProcessState.STATE_CONNECTED);
+            ShowToast("Failed to get appslist");
+        }
+    }
+
 
     public void openAccessabilitySettings(View view) {
         if (PhoneUtils.isAccessibilityEnabled(this, Constants.accessibilityServiceId) == false) {
@@ -207,16 +219,9 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
 
 
         //Step 1: Download Apps
+        ProcessState.setState(ProcessState.STATE_DOWNLOADING_APKS);
         AppDownloader a = new AppDownloader(this);
         a.download(getApplicationContext().getFilesDir().getAbsolutePath(), appsList);
-
-/*
-        Intent intent = new Intent(Intent.ACTION_DELETE);
-        intent.setData(Uri.parse("package:lava.retailcustomerclient"));
-        startActivity(intent);
-*/
-
-        //stopService(new Intent(getApplication(), APKInstallCheckService.class));
     }
 
     public void updateButtonText(String msg) {
@@ -232,15 +237,10 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         ((AppInfoObject)task.getTag()).downloadDone = true;
         downloadCount++;
 
-        //updateButtonText("Completed " + ((AppInfoObject)task.getTag()).appName);
-
         // check if all are downloaded
         if( downloadCount == appsList.size()) {
+            ProcessState.setState(ProcessState.STATE_DONE_DOWNLOADING_APKS);
             ShowToast("All apk's downloaded.");
-
-
-            //AppInstaller a = new AppInstaller(this);
-            //a.installApps(appsList);
 
 
             // Bind to LocalService - AUTO CREATE
@@ -251,7 +251,6 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
 
             //enable installButton again when everything is done
             // // TODO: 5/26/2016 enable after all installs are done. not before. After enabling, change onClick()
-            installButton.setEnabled(true);
         }
     }
 
@@ -314,15 +313,71 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MSG_UPDATE_PROGRESS:
+                case MSG_UPDATE_UI:
                     String msgText = msg.getData().getString("str1");
-                    ShowToast("MSG_UPDATE_PROGRESS: " + msgText);
+                    //ShowToast("MSG_UPDATE_UI: " + msgText);
                     break;
 
                 default:
                     super.handleMessage(msg);
             }
         }
+    }
+
+    void UpdateUI() {
+        int state = ProcessState.getState();
+
+        switch(state) {
+            case ProcessState.STATE_NOT_STARTED:
+                break;
+            case ProcessState.STATE_CONNECTED:
+                break;
+            case ProcessState.STATE_GETTING_APPSLIST:
+                break;
+            case ProcessState.STATE_DONE_GETTING_APPSLIST:
+                break;
+            case ProcessState.STATE_DOWNLOADING_APKS:
+                break;
+            case ProcessState.STATE_DONE_DOWNLOADING_APKS:
+                break;
+            case ProcessState.STATE_INSTALLING_APKS:
+                break;
+            case ProcessState.STATE_DONE_INSTALLING_APKS:
+                break;
+            case ProcessState.STATE_COLLECTING_DEVICE_DATA:
+                break;
+            case ProcessState.STATE_DONE_COLLECTING_DEVICE_DATA:
+                break;
+            case ProcessState.STATE_SUBMITTING_DATA:
+                break;
+            case ProcessState.STATE_DONE_SUBMITTING_DATA:
+                // update button onClick - uninstall
+                installButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        uninstallSelf();
+                    }
+                });
+                installButton.setText("Process complete. Press to remove kit & exit.");
+                installButton.setEnabled(true);
+                break;
+
+            default:
+                Log.e("UpdateUI", "Bad state "+state);
+                break;
+        }
+    }
+
+    void uninstallSelf() {
+        Intent intent = new Intent(Intent.ACTION_DELETE);
+        intent.setData(Uri.parse("package:lava.retailcustomerclient"));
+        startActivity(intent);
+
+
+        Uri packageUri = Uri.parse("package:org.klnusbaum.test");
+        Intent uninstallIntent =
+                new Intent(Intent.ACTION_UNINSTALL_PACKAGE, packageUri);
+        startActivity(uninstallIntent);
     }
 }
 
