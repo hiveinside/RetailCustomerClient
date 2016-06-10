@@ -37,7 +37,7 @@ public class RetailAccessibilityService extends AccessibilityService {
 
         AccessibilityNodeInfo mEventSource = event.getSource();
         boolean isAndroidInstaller = false;
-        String androidInstallerPkgName = Constants.androidPackageInstallerPkg;
+        String androidInstallerPkgName = Constants.getAndroidPackageInstallerName();
         isAndroidInstaller = androidInstallerPkgName.contains(event.getPackageName());
 
         if (isAndroidInstaller) {
