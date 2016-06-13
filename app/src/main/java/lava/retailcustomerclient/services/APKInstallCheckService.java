@@ -274,7 +274,7 @@ public class APKInstallCheckService extends Service {
             nextIndex++;
 
             // all apps done?
-            if (nextIndex >= installList.size()-3) {
+            if (nextIndex >= installList.size()) {
                 ProcessState.setState(ProcessState.STATE_DONE_INSTALLING_APKS);
                 stopOverlay();
 
