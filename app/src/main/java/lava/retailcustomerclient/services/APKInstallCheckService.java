@@ -29,12 +29,14 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.deviceutils.PhoneUtils;
 import lava.retailcustomerclient.ui.CustomerKitActivity;
 import lava.retailcustomerclient.utils.AppInfoObject;
+import lava.retailcustomerclient.utils.PackageManagerUtils;
 import lava.retailcustomerclient.utils.ProcessState;
 import lava.retailcustomerclient.utils.PromoterInfoObject;
 import lava.retailcustomerclient.utils.SubmitData;
@@ -61,6 +63,7 @@ public class APKInstallCheckService extends Service {
     static Context serviceContext;
 
     static private List<AppInfoObject> installList;
+    HashSet<String> alreadyInstalledAppsList;
 
     void ShowToast (String text) {
         Toast.makeText(serviceContext, text, Toast.LENGTH_SHORT).show();
@@ -147,7 +150,7 @@ public class APKInstallCheckService extends Service {
         super.onDestroy();
     }
 
-    void startOverlay() {
+    private void startOverlay() {
 
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 
@@ -190,7 +193,7 @@ public class APKInstallCheckService extends Service {
         }
     }
 
-    static void stopOverlay() {
+    private static void stopOverlay() {
         if(mView != null) {
             wm.removeView(mView);
             mView = null;
@@ -199,7 +202,7 @@ public class APKInstallCheckService extends Service {
         nextIndex = 0;
     }
 
-    static void updateOverlay() {
+    private static void updateOverlay() {
         if (mView != null) {
             TextView textLabel = (TextView) mView.findViewById(R.id.appdetail);
             if (textLabel != null) {
@@ -212,9 +215,11 @@ public class APKInstallCheckService extends Service {
 
         this.installList = installList;
         if (installList == null) {
-            Log.d("installApps", "Starting app installation");
+            Log.d("installApps", "list is null");
             return;
         }
+
+        alreadyInstalledAppsList = PackageManagerUtils.getInstalledPackages(serviceContext);
 
         ProcessState.setState(ProcessState.STATE_INSTALLING_APKS);
         Log.d("installApps", "Starting app installation");
@@ -236,36 +241,79 @@ public class APKInstallCheckService extends Service {
         File file = new File(apkExternalPath);
         file.mkdirs(); // ensure directory is present
 
-        //Copy file to external memory first
-        String fromFileName = apkInternalPath + installList.get(nextIndex).packageName + ".apk";
-        String toFileName = apkExternalPath + installList.get(nextIndex).packageName + ".apk";
+        // all apps done?
+        if (nextIndex >= installList.size()) {
+            onAllApkInstallDone();
+            return;
+        } else {
+            updateOverlay();
+        }
 
-        File origFile = new File(fromFileName);
-        File tempFile = new File(toFileName);
 
-        try {
-            FileUtils.copyFile(origFile, tempFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+        if (isAlreadyInstalled(installList.get(nextIndex).packageName) == true) {
+            skipApkInstall();
+        } else {
 
-            // make sure file permissions are set
-            tempFile.setReadable(true, false);
+            //Copy file to external memory first
+            String fromFileName = apkInternalPath + installList.get(nextIndex).packageName + ".apk";
+            String toFileName = apkExternalPath + installList.get(nextIndex).packageName + ".apk";
 
-            ComponentName c;
+            File origFile = new File(fromFileName);
+            File tempFile = new File(toFileName);
 
-            Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-            intent.setDataAndType(Uri.fromFile(tempFile), "application/vnd.android.package-archive");
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
-            //intent.setComponent(new ComponentName(activityContext.getPackageName(), "AppInstaller"));
-            //intent.setPackage(activityContext.getApplicationContext().getPackageName());
-            startActivity(intent);
+            try {
+                FileUtils.copyFile(origFile, tempFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+
+                // make sure file permissions are set
+                tempFile.setReadable(true, false);
+
+                Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                intent.setDataAndType(Uri.fromFile(tempFile), "application/vnd.android.package-archive");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
+                //intent.setComponent(new ComponentName(activityContext.getPackageName(), "AppInstaller"));
+                //intent.setPackage(activityContext.getApplicationContext().getPackageName());
+                startActivity(intent);
+            }
         }
     }
 
-    public void onApkInstallDone(String packageName) {
+    private boolean isAlreadyInstalled(String packageName) {
+        return alreadyInstalledAppsList.contains(packageName);
+    }
 
-        Log.e("Service", "Installed: " + packageName);
+    private void skipApkInstall() {
+        Log.e("skipApkInstall", "skipped: " + installList.get(nextIndex).packageName);
+        if (installList != null) {
+            ShowToast("Skipping " + "\"" + installList.get(nextIndex).appName + "\"");
+
+            installList.get(nextIndex).installDone = 2; // skipped - already present
+            installList.get(nextIndex).installts = System.currentTimeMillis();
+
+            nextIndex++;
+
+            continueInstallApps();
+        }
+    }
+
+    private void onAllApkInstallDone() {
+        ProcessState.setState(ProcessState.STATE_DONE_INSTALLING_APKS);
+        stopOverlay();
+
+        //reset static data
+        nextIndex = 0;
+
+        //Collect Installation & Device data & submit
+        ProcessState.setState(ProcessState.STATE_COLLECTING_DEVICE_DATA);
+        SubmitData s = new SubmitData(serviceContext);
+        s.execute(getSubmitDataObject());
+    }
+
+    private void onApkInstallDone(String packageName) {
+
+        Log.e("onApkInstallDone", "Installed: " + packageName);
         if (installList != null) {
 
             installList.get(nextIndex).installDone = 1; // installed
@@ -273,32 +321,11 @@ public class APKInstallCheckService extends Service {
 
             nextIndex++;
 
-            // all apps done?
-            if (nextIndex >= installList.size()) {
-                ProcessState.setState(ProcessState.STATE_DONE_INSTALLING_APKS);
-                stopOverlay();
-
-                //1: reset static data
-                nextIndex = 0;
-
-                //2: inform UI.
-
-
-                //3: Collect Installation & Device data
-                ProcessState.setState(ProcessState.STATE_COLLECTING_DEVICE_DATA);
-                SubmitData s = new SubmitData(serviceContext);
-                s.execute(getSubmitDataObject());
-
-                //4: Submit data to promoter
-            } else {
-
-                continueInstallApps();
-                updateOverlay();
-            }
+            continueInstallApps();
         }
     }
 
-    static SubmitDataObject getSubmitDataObject() {
+    private static SubmitDataObject getSubmitDataObject() {
 
         SubmitDataObject data = new SubmitDataObject();
 
