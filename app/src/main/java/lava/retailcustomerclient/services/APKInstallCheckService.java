@@ -4,6 +4,9 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Binder;
@@ -171,6 +174,7 @@ public class APKInstallCheckService extends Service {
 
 
         params.gravity = Gravity.LEFT | Gravity.CENTER;
+        params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
         inflate = (LayoutInflater) getBaseContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -250,7 +254,9 @@ public class APKInstallCheckService extends Service {
         }
 
 
-        if (isAlreadyInstalled(installList.get(nextIndex).packageName) == true) {
+        if (possibleToInstallPkg(apkInternalPath + installList.get(nextIndex).packageName + ".apk") == false) {
+            skipApkInstall();
+        } else if (isAlreadyInstalled(installList.get(nextIndex).packageName) == true) {
             skipApkInstall();
         } else {
 
@@ -282,6 +288,20 @@ public class APKInstallCheckService extends Service {
 
     private boolean isAlreadyInstalled(String packageName) {
         return alreadyInstalledAppsList.contains(packageName);
+    }
+
+    private boolean possibleToInstallPkg(String fullname) {
+
+        PackageManager pm = serviceContext.getPackageManager();
+        PackageInfo pi = pm.getPackageArchiveInfo(fullname, 0);
+
+        if (pi == null) {
+            // Trying to parse non existent file.
+            return false;
+        }
+        ShowToast(fullname);
+        //ShowToast(pi.packageName);
+        return true;
     }
 
     private void skipApkInstall() {

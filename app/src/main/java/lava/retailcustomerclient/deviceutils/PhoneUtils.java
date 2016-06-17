@@ -63,10 +63,10 @@ public class PhoneUtils {
         devInfo.android_api = getSdkVersion();
         devInfo.network_status = getNetworkStatus(context); //2g/3g/4g/wifi
         devInfo.rooted = isRooted(); // rooted status
-        devInfo.internal_avail = getAvailInternalStorage(); //available internal mem
-        devInfo.internal_total = getTotalInternalStorage(); //Total internal mem
-        devInfo.external_avail = getAvailExternalStorage(); //available internal mem
-        devInfo.external_total = getTotalExternalStorage(); //Total external mem
+        devInfo.int_avail = getAvailInternalStorage(); //available internal mem
+        devInfo.int_total = getTotalInternalStorage(); //Total internal mem
+        devInfo.ext_avail = getAvailExternalStorage(); //available internal mem
+        devInfo.ext_total = getTotalExternalStorage(); //Total external mem
         devInfo.ram_total = getTotalRAM(context); //RAM size
         devInfo.ram_avail = getAvailableRAM(context); //RAM size
         devInfo.kit_version_code = BuildConfig.VERSION_CODE;// kit app version
@@ -91,7 +91,7 @@ public class PhoneUtils {
         return false;
     }
 
-    private static String getIMEI(Context context) {
+    public static String getIMEI(Context context) {
         TelephonyManager telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
 
         return DoubleSimUtil.getImei(context, telephonyManager);
