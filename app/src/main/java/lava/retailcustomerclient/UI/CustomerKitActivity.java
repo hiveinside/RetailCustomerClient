@@ -203,25 +203,29 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     }
 
     public void doCompleteProcess() {
-        //ShowToast("Install Pressed ..");
 
-        // 1) Download apps
-        // 2) Install Apps
-        // 3) Collect install data
-        // 4) Collect Phone info (IMEI, andoid id, brand, model, Resolution, MAC, timestamp, ...
-        // 5) Send to RetailJunction
-        // 6) Uninstall Kit
+        if (checkPreConditions() == false) {
+            return;
+        }
+
         //reset it
         downloadCount = 0;
 
         //disable installButton
         installButton.setEnabled(false);
 
-
         //Step 1: Download Apps
         ProcessState.setState(ProcessState.STATE_DOWNLOADING_APKS);
         AppDownloader a = new AppDownloader(this);
         a.download(getApplicationContext().getFilesDir().getAbsolutePath(), appsList);
+    }
+
+    private boolean checkPreConditions() {
+        if (PhoneUtils.getIMEI(getApplicationContext()) == null) {
+            ShowToast("Error: unable to read IMEI");
+            return false;
+        }
+        return true;
     }
 
     public void updateButtonText(String msg) {
