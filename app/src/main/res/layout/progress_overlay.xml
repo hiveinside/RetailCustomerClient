@@ -33,7 +33,7 @@
         android:id="@+id/cancelImage"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:src="@drawable/cancelsquare"
+        android:src="@drawable/cancel_square"
         android:scaleType="fitCenter" />
 
 
