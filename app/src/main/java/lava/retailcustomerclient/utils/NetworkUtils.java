@@ -6,8 +6,15 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.support.v4.BuildConfig;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.TextView;
+
+import lava.retailcustomerclient.R;
 
 /**
  * Created by saurabh on 6/19/16.
@@ -49,7 +56,7 @@ public class NetworkUtils {
                     NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network[i]);
                     int networkType = networkInfo.getType();
                     if(ConnectivityManager.TYPE_WIFI == networkType ){
-                        connectivityManager.bindProcessToNetwork(network[i]);
+                       // connectivityManager.bindProcessToNetwork(network[i]);
                     }
                 }
             }
@@ -58,6 +65,50 @@ public class NetworkUtils {
 
 
         }
+
+
+    }
+
+
+    public static boolean isConnectedToRetailWifi(Context context) {
+
+
+
+
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
+        String currentSSID = wifiInfo.getSSID();
+
+
+        // if(currentSSID.compareToIgnoreCase(Constants.wifiSSID))
+        if (currentSSID.equals("\"" + Constants.wifiSSID + "\"")) {
+            return true;
+        }
+
+        return false;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     }
