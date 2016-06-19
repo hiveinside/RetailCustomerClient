@@ -15,6 +15,9 @@ public class Constants {
     public static final String submitDataURL = "http://192.168.43.1:8888";
     public static final String promoterBaseURL = "http://192.168.43.1:8888";
 
+    public static final int PACKAGE_INSTALL_TIMEOUT = 60000; // ms
+
+
 
     private static final String androidPackageInstallerPkg = "com.android.packageinstaller";
     private static final String androidPackageInstallerPkgM = "com.google.android.packageinstaller";

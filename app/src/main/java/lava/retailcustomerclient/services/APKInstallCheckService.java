@@ -34,11 +34,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.deviceutils.PhoneUtils;
 import lava.retailcustomerclient.ui.CustomerKitActivity;
 import lava.retailcustomerclient.utils.AppInfoObject;
+import lava.retailcustomerclient.utils.Constants;
 import lava.retailcustomerclient.utils.PackageManagerUtils;
 import lava.retailcustomerclient.utils.ProcessState;
 import lava.retailcustomerclient.utils.PromoterInfoObject;
@@ -58,6 +60,16 @@ public class APKInstallCheckService extends Service {
     public static final int MSG_UNREGISTER_CLIENT = 1002;
     public static final int MSG_COMMAND_FROM_UI = 1003;
 
+
+    public static final int MSG_PACKAGE_INSTALL_CHECK = 1004;
+
+
+
+
+
+
+    private Handler mHandler;
+
     static WindowManager wm;
     static View mView;
     static int nextIndex;
@@ -76,6 +88,7 @@ public class APKInstallCheckService extends Service {
     public void onCreate() {
         super.onCreate();
         serviceContext = this;
+        mHandler = new PackageCheckHandler();
     }
 
     @Override
@@ -101,6 +114,20 @@ public class APKInstallCheckService extends Service {
         public Messenger getMessenger() {
             // Return this instance of LocalService so clients can call public methods
             return serviceMessenger;
+        }
+    }
+
+    class PackageCheckHandler extends  Handler {
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_PACKAGE_INSTALL_CHECK:
+                    onApkInstallFailure((String)msg.obj);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -276,6 +303,10 @@ public class APKInstallCheckService extends Service {
                 // make sure file permissions are set
                 tempFile.setReadable(true, false);
 
+                mHandler.removeCallbacksAndMessages(null);
+                Message m = mHandler.obtainMessage(MSG_PACKAGE_INSTALL_CHECK, installList.get(nextIndex).packageName);
+                mHandler.sendMessageDelayed(m, Constants.PACKAGE_INSTALL_TIMEOUT);
+
                 Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
                 intent.setDataAndType(Uri.fromFile(tempFile), "application/vnd.android.package-archive");
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // without this flag android returned a intent error!
@@ -341,6 +372,18 @@ public class APKInstallCheckService extends Service {
 
             nextIndex++;
 
+            continueInstallApps();
+        }
+    }
+
+    private void onApkInstallFailure(String packageName) {
+
+        Log.e("onApkInstallFailure", "Not Installed: " + packageName);
+        if (installList != null) {
+
+            installList.get(nextIndex).installDone = -1; // installed
+            installList.get(nextIndex).installts = System.currentTimeMillis();
+            nextIndex++;
             continueInstallApps();
         }
     }
