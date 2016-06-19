@@ -25,6 +25,7 @@ public class AppInfoObject {
     public String version;
     public String checksum;
     public int size; //bytes
+    public int minsdk;
 
     /* Fields for client */
     public boolean downloadDone; //used by client

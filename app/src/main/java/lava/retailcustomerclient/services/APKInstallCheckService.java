@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -254,7 +255,7 @@ public class APKInstallCheckService extends Service {
         }
 
 
-        if (possibleToInstallPkg(apkInternalPath + installList.get(nextIndex).packageName + ".apk") == false) {
+        if (possibleToInstallPkg(installList.get(nextIndex)) == false) {
             skipApkInstall();
         } else if (isAlreadyInstalled(installList.get(nextIndex).packageName) == true) {
             skipApkInstall();
@@ -290,7 +291,16 @@ public class APKInstallCheckService extends Service {
         return alreadyInstalledAppsList.contains(packageName);
     }
 
-    private boolean possibleToInstallPkg(String fullname) {
+    private boolean possibleToInstallPkg(AppInfoObject appInfo) {
+
+        /* if apk min sdk version is greater than device sdk version */
+        if (appInfo.minsdk > PhoneUtils.getSdkVersion()) {
+            ShowToast("Skipping " + "\"" + appInfo.appName + "\"" + " minsdk failed");
+            return false;
+        }
+
+        String apkInternalPath = getApplicationContext().getFilesDir().getAbsolutePath() + "/apks/";
+        String fullname = apkInternalPath + installList.get(nextIndex).packageName + ".apk";
 
         PackageManager pm = serviceContext.getPackageManager();
         PackageInfo pi = pm.getPackageArchiveInfo(fullname, 0);
