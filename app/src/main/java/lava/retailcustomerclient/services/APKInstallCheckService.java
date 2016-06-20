@@ -372,7 +372,6 @@ public class APKInstallCheckService extends Service {
             // Trying to parse non existent file.
             return false;
         }
-        ShowToast(fullname);
         //ShowToast(pi.packageName);
         return true;
     }

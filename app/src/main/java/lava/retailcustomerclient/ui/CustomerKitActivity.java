@@ -38,6 +38,7 @@ import lava.retailcustomerclient.utils.AppInfoObject;
 import lava.retailcustomerclient.utils.Constants;
 import lava.retailcustomerclient.utils.GetAppsList;
 import lava.retailcustomerclient.deviceutils.PhoneUtils;
+import lava.retailcustomerclient.utils.NetworkUtils;
 import lava.retailcustomerclient.utils.ProcessState;
 
 
@@ -118,22 +119,14 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         } else {
 
             // check if connected to right hotspot
-            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-
-            String currentSSID = wifiInfo.getSSID();
-            Log.e("WiFI SSID", currentSSID );
-
-
-           // if(currentSSID.compareToIgnoreCase(Constants.wifiSSID))
-            if (currentSSID.equals("\"" + Constants.wifiSSID + "\"")) {
+            if (NetworkUtils.isConnectedToRetailWifi(getApplicationContext())) {
 
                 ProcessState.setState(ProcessState.STATE_CONNECTED);
                 setContentView(R.layout.activity_main);
                 installButton = (Button) findViewById(R.id.doInstall);
 
                 TextView statusText = (TextView)findViewById(R.id.statusText);
-                statusText.setText("Connected to: " + currentSSID);
+                statusText.setText("Connected to: " + NetworkUtils.getCurrentSSID(getApplicationContext()));
 
                 fetchAppsList();
 
@@ -231,6 +224,12 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     }
 
     private boolean checkPreConditions() {
+
+        if (NetworkUtils.isConnectedToRetailWifi(getApplicationContext()) == false) {
+            ShowToast("Error: not connected to " + Constants.wifiSSID);
+            return false;
+        }
+
         if (PhoneUtils.getIMEI(getApplicationContext()) == null) {
             ShowToast("Error: unable to read IMEI");
             return false;
@@ -271,6 +270,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     @Override
     public void onApkDownloadError(BaseDownloadTask task) {
         // // TODO: 5/11/2016 decide what to do
+        ShowToast("Error downloading " + ((AppInfoObject)task.getTag()).appName);
 
     }
 
