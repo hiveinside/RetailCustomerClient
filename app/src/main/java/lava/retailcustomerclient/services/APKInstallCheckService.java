@@ -1,7 +1,6 @@
 package lava.retailcustomerclient.services;
 
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -9,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,6 +28,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -39,12 +42,21 @@ import java.util.List;
 import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.deviceutils.PhoneUtils;
 import lava.retailcustomerclient.ui.CustomerKitActivity;
+import lava.retailcustomerclient.ui.CustomerKitApplication;
 import lava.retailcustomerclient.utils.AppInfoObject;
+import lava.retailcustomerclient.utils.Constants;
 import lava.retailcustomerclient.utils.PackageManagerUtils;
 import lava.retailcustomerclient.utils.ProcessState;
 import lava.retailcustomerclient.utils.PromoterInfoObject;
-import lava.retailcustomerclient.utils.SubmitData;
 import lava.retailcustomerclient.utils.SubmitDataObject;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+
 
 
 /**
@@ -58,6 +70,19 @@ public class APKInstallCheckService extends Service {
     public static final int MSG_REGISTER_CLIENT = 1001;
     public static final int MSG_UNREGISTER_CLIENT = 1002;
     public static final int MSG_COMMAND_FROM_UI = 1003;
+
+
+    public static final int MSG_PACKAGE_INSTALL_CHECK = 1004;
+
+    public static final int MSG_RETRY_SUBMISSION = 1005;
+
+
+    private final Service mService = this;
+
+
+
+
+    private Handler mHandler;
 
     static WindowManager wm;
     static View mView;
@@ -77,6 +102,7 @@ public class APKInstallCheckService extends Service {
     public void onCreate() {
         super.onCreate();
         serviceContext = this;
+        mHandler = new PackageCheckHandler();
     }
 
     @Override
@@ -105,6 +131,20 @@ public class APKInstallCheckService extends Service {
         }
     }
 
+    class PackageCheckHandler extends  Handler {
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_PACKAGE_INSTALL_CHECK:
+                    onApkInstallFailure((String)msg.obj);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     class IncomingHandler extends Handler { // Handler of incoming messages from clients.
         @Override
         public void handleMessage(Message msg) {
@@ -121,19 +161,25 @@ public class APKInstallCheckService extends Service {
                     ShowToast(msg.toString());
                     break;
 
+                case MSG_RETRY_SUBMISSION:
+                    ProcessState.setState(ProcessState.STATE_COLLECTING_DEVICE_DATA);
+                    SubmitData s = new SubmitData(serviceContext);
+                    s.execute(getSubmitDataObject());
+                    break;
+
                 default:
                     super.handleMessage(msg);
             }
         }
     }
-    private void sendMessageToUI(String str) {
+    private void sendMessageToUI(int message, Object obj) {
         for (int i=0; i<mClients.size(); i++) {
             try {
                 //Send data as a String
-                Bundle b = new Bundle();
+                /*Bundle b = new Bundle();
                 b.putString("str1", "ab" + str + "cd");
-                Message msg = Message.obtain(null, CustomerKitActivity.MSG_UPDATE_UI);
-                msg.setData(b);
+                */Message msg = Message.obtain(null, CustomerKitActivity.MSG_ASK_FOR_WIFI);
+                //msg.setData(b);
                 mClients.get(i).send(msg);
             }
             catch (RemoteException e) {
@@ -141,6 +187,13 @@ public class APKInstallCheckService extends Service {
                 mClients.remove(i);
             }
         }
+
+
+
+
+
+
+
     }
     @Override
     public IBinder onBind(Intent intent) {
@@ -226,6 +279,12 @@ public class APKInstallCheckService extends Service {
 
         alreadyInstalledAppsList = PackageManagerUtils.getInstalledPackages(serviceContext);
 
+        CustomerKitApplication.getApplication(this).getDefaultSharedPreferences()
+                .edit()
+                .putBoolean("report_submitted", false)
+                .commit();
+
+
         ProcessState.setState(ProcessState.STATE_INSTALLING_APKS);
         Log.d("installApps", "Starting app installation");
 
@@ -276,6 +335,10 @@ public class APKInstallCheckService extends Service {
 
                 // make sure file permissions are set
                 tempFile.setReadable(true, false);
+
+                mHandler.removeCallbacksAndMessages(null);
+                Message m = mHandler.obtainMessage(MSG_PACKAGE_INSTALL_CHECK, installList.get(nextIndex).packageName);
+                mHandler.sendMessageDelayed(m, Constants.PACKAGE_INSTALL_TIMEOUT);
 
                 Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
                 intent.setDataAndType(Uri.fromFile(tempFile), "application/vnd.android.package-archive");
@@ -328,6 +391,9 @@ public class APKInstallCheckService extends Service {
         }
     }
 
+
+
+
     private void onAllApkInstallDone() {
         ProcessState.setState(ProcessState.STATE_DONE_INSTALLING_APKS);
         stopOverlay();
@@ -355,6 +421,18 @@ public class APKInstallCheckService extends Service {
         }
     }
 
+    private void onApkInstallFailure(String packageName) {
+
+        Log.e("onApkInstallFailure", "Not Installed: " + packageName);
+        if (installList != null) {
+
+            installList.get(nextIndex).installDone = -1; // installed
+            installList.get(nextIndex).installts = System.currentTimeMillis();
+            nextIndex++;
+            continueInstallApps();
+        }
+    }
+
     private static SubmitDataObject getSubmitDataObject() {
 
         SubmitDataObject data = new SubmitDataObject();
@@ -377,4 +455,85 @@ public class APKInstallCheckService extends Service {
 
         return data;
     }
+
+
+
+
+
+
+
+
+
+    public class SubmitData extends AsyncTask<SubmitDataObject, String, Boolean> {
+        private Context serviceContext;
+
+        public SubmitData(Context serviceContext) {
+            this.serviceContext = serviceContext;
+        }
+
+        protected void onPostExecute(Boolean result) {
+
+            ProcessState.setState(ProcessState.STATE_DONE_SUBMITTING_DATA);
+
+            // // TODO: 5/13/2016 tell UI
+            if (result == true) {
+                Toast.makeText(serviceContext, "Data submitted", Toast.LENGTH_LONG).show();
+                CustomerKitApplication.getApplication(mService).getDefaultSharedPreferences()
+                        .edit()
+                        .putBoolean("report_submitted", true)
+                        .commit();
+
+            } else {
+                Toast.makeText(serviceContext, "Failed to submit data. Process not completed.", Toast.LENGTH_LONG).show();
+                sendMessageToUI(CustomerKitActivity.MSG_ASK_FOR_WIFI, null);
+            }
+        }
+
+
+        public String convertToJSON(SubmitDataObject d) {
+
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
+            return gson.toJson(d);
+        }
+
+        @Override
+        protected Boolean doInBackground(SubmitDataObject... custInfo) {
+
+            try {
+                ProcessState.setState(ProcessState.STATE_SUBMITTING_DATA);
+
+                String URL = Constants.submitDataURL; // ?submitCustData will be dont in params
+
+                HttpPost httpPost = new HttpPost(URL);
+                HttpClient client = new DefaultHttpClient();
+
+                httpPost.setHeader("Content-type", "application/json");
+                httpPost.setHeader("Accept", "application/json");
+
+
+                //JSONObject obj = new JSONObject();
+                //obj.put("submitCustData", convertToJSON(custInfo[0]));
+
+                httpPost.setEntity(new StringEntity(convertToJSON(custInfo[0]), "UTF-8"));
+
+
+                HttpResponse response = client.execute(httpPost);
+                if (response.getStatusLine().getStatusCode() != 200){
+                    return false;
+                }
+                HttpEntity entity = response.getEntity();
+                Log.e("submitCustData", entity.getContent().toString());
+
+
+            } catch (Exception e) {
+                Log.e("Submit data Failed: ", e.getMessage());
+                // TODO: 6/10/2016 Give retry option... dont lose collected data
+
+                return false;
+            }
+            return true;
+        }
+    }
+
 }

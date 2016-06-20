@@ -2,8 +2,10 @@ package lava.retailcustomerclient.ui;
 
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
@@ -15,6 +17,8 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -49,6 +53,11 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     boolean mBound = false;
     public static final int MSG_UPDATE_UI = 1000;
 
+    public static final int MSG_ASK_FOR_WIFI = 2001;
+
+    private Handler mHandler;
+
+
 
     void ShowToast (String text) {
         Toast.makeText(CustomerKitActivity.this, text, Toast.LENGTH_SHORT).show();
@@ -79,6 +88,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mHandler = new Handler();
 
         //startService(new Intent(CustomerKitActivity.this, APKInstallCheckService.class));
         ProcessState.setState(ProcessState.STATE_NOT_STARTED);
@@ -315,6 +325,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
 
     class IncomingHandler extends Handler {
         @Override
+
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_UPDATE_UI:
@@ -322,11 +333,95 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
                     //ShowToast("MSG_UPDATE_UI: " + msgText);
                     break;
 
+                case MSG_ASK_FOR_WIFI:
+
+
+
+
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            if(!isFinishing())
+                                showErrorDialog();
+
+                        }
+                    });
+
+
+
+
+
+                   /* setContentView(R.layout.activity_first);
+
+                    ProcessState.setState(ProcessState.STATE_NOT_STARTED);
+
+                    TextView infoText = (TextView)findViewById(R.id.infoText);
+                    infoText.setText("Not connected to " + Constants.wifiSSID);
+
+                    Button button = (Button)findViewById(R.id.button);
+                    button.setText("Retry");
+
+                    button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //startProcess();
+
+                            try {
+                                Message msg = Message.obtain(null, APKInstallCheckService.MSG_RETRY_SUBMISSION);
+                                msg.replyTo = activityMessenger;
+                                serviceMessenger.send(msg);
+                            }
+                            catch (RemoteException e) {
+                                // In this case the service has crashed before we could even do anything with it
+                            }
+
+
+                        }
+                    });*/
+
+
+                    break;
                 default:
                     super.handleMessage(msg);
             }
         }
     }
+
+
+    public void showErrorDialog() {
+
+        // 1. Instantiate an AlertDialog.Builder with its constructor
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+// 2. Chain together various setter methods to set the dialog characteristics
+        builder.setMessage(R.string.report_not_submitted)
+                .setTitle(R.string.retry);
+        builder.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+                try {
+                    Message msg = Message.obtain(null, APKInstallCheckService.MSG_RETRY_SUBMISSION);
+                    msg.replyTo = activityMessenger;
+                    serviceMessenger.send(msg);
+                }
+                catch (RemoteException e) {
+                    // In this case the service has crashed before we could even do anything with it
+                }
+
+            }
+        });
+
+// 3. Get the AlertDialog from create()
+        AlertDialog dialog = builder.create();
+
+        dialog.show();
+
+
+
+    }
+
 
     void UpdateUI() {
         int state = ProcessState.getState();
