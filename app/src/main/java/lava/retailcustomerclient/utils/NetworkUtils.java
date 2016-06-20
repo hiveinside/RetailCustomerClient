@@ -60,26 +60,12 @@ public class NetworkUtils {
                     }
                 }
             }
-
-
-
-
         }
-
-
     }
-
 
     public static boolean isConnectedToRetailWifi(Context context) {
 
-
-
-
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-
-        String currentSSID = wifiInfo.getSSID();
-
+        String currentSSID = getCurrentSSID(context);
 
         // if(currentSSID.compareToIgnoreCase(Constants.wifiSSID))
         if (currentSSID.equals("\"" + Constants.wifiSSID + "\"")) {
@@ -87,29 +73,13 @@ public class NetworkUtils {
         }
 
         return false;
+    }
 
+    public static String getCurrentSSID(Context context) {
 
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return wifiInfo.getSSID();
     }
 }
