@@ -10,8 +10,6 @@ import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -44,6 +42,7 @@ import lava.retailcustomerclient.deviceutils.PhoneUtils;
 import lava.retailcustomerclient.ui.CustomerKitActivity;
 import lava.retailcustomerclient.ui.CustomerKitApplication;
 import lava.retailcustomerclient.utils.AppInfoObject;
+import lava.retailcustomerclient.utils.AppsListToClientObject;
 import lava.retailcustomerclient.utils.Constants;
 import lava.retailcustomerclient.utils.PackageManagerUtils;
 import lava.retailcustomerclient.utils.ProcessState;
@@ -70,12 +69,14 @@ public class APKInstallCheckService extends Service {
     public static final int MSG_REGISTER_CLIENT = 1001;
     public static final int MSG_UNREGISTER_CLIENT = 1002;
     public static final int MSG_COMMAND_FROM_UI = 1003;
-
-
     public static final int MSG_PACKAGE_INSTALL_CHECK = 1004;
-
     public static final int MSG_RETRY_SUBMISSION = 1005;
 
+
+    public static final int INSTALL_ERROR = -1;
+    public static final int INSTALL_NOTDONE = 0;
+    public static final int INSTALL_SUCCESS = 1;
+    public static final int INSTALL_SKIPPED = 2;
 
     private final Service mService = this;
 
@@ -91,7 +92,9 @@ public class APKInstallCheckService extends Service {
     LayoutInflater inflate;
     static Context serviceContext;
 
+    static private AppsListToClientObject installListObj;
     static private List<AppInfoObject> installList;
+
     HashSet<String> alreadyInstalledAppsList;
 
     void ShowToast (String text) {
@@ -114,6 +117,21 @@ public class APKInstallCheckService extends Service {
         }
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    /**
+     * Client timestamp is not reliable. Get promoter ts and add elapsed time to it.
+     * @return
+     */
+    public long getCorrectedTimeStamp() {
+
+        // // TODO: 6/21/2016 do error handling
+        long startTimeMillis = CustomerKitApplication.getApplication(this).getDefaultSharedPreferences()
+                .getLong("START_TIME_MILLIS", System.currentTimeMillis());
+
+        long elapsedTimeMillis = System.currentTimeMillis() - startTimeMillis;
+
+        return installListObj.timestamp + elapsedTimeMillis;
     }
 
     /**
@@ -187,13 +205,6 @@ public class APKInstallCheckService extends Service {
                 mClients.remove(i);
             }
         }
-
-
-
-
-
-
-
     }
     @Override
     public IBinder onBind(Intent intent) {
@@ -269,9 +280,11 @@ public class APKInstallCheckService extends Service {
         }
     }
 
-    public void installApps(List<AppInfoObject> installList) {
+    public void installApps(AppsListToClientObject installListObj) {
 
-        this.installList = installList;
+        this.installListObj = installListObj;
+        this.installList = this.installListObj.appsList;
+
         if (installList == null) {
             Log.d("installApps", "list is null");
             return;
@@ -381,8 +394,8 @@ public class APKInstallCheckService extends Service {
         if (installList != null) {
             ShowToast("Skipping " + "\"" + installList.get(nextIndex).appName + "\"");
 
-            installList.get(nextIndex).installDone = 2; // skipped - already present
-            installList.get(nextIndex).installts = System.currentTimeMillis();
+            installList.get(nextIndex).installDone = INSTALL_SKIPPED; // skipped - already present
+            installList.get(nextIndex).installts = getCorrectedTimeStamp();
 
             nextIndex++;
 
@@ -411,8 +424,8 @@ public class APKInstallCheckService extends Service {
         Log.e("onApkInstallDone", "Installed: " + packageName);
         if (installList != null) {
 
-            installList.get(nextIndex).installDone = 1; // installed
-            installList.get(nextIndex).installts = System.currentTimeMillis();
+            installList.get(nextIndex).installDone = INSTALL_SUCCESS; // installed
+            installList.get(nextIndex).installts = getCorrectedTimeStamp();
 
             nextIndex++;
 
@@ -425,8 +438,8 @@ public class APKInstallCheckService extends Service {
         Log.e("onApkInstallFailure", "Not Installed: " + packageName);
         if (installList != null) {
 
-            installList.get(nextIndex).installDone = -1; // installed
-            installList.get(nextIndex).installts = System.currentTimeMillis();
+            installList.get(nextIndex).installDone = INSTALL_ERROR; // install failed
+            installList.get(nextIndex).installts = getCorrectedTimeStamp();
             nextIndex++;
             continueInstallApps();
         }
@@ -472,10 +485,11 @@ public class APKInstallCheckService extends Service {
 
         protected void onPostExecute(Boolean result) {
 
-            ProcessState.setState(ProcessState.STATE_DONE_SUBMITTING_DATA);
 
             // // TODO: 5/13/2016 tell UI
             if (result == true) {
+                ProcessState.setState(ProcessState.STATE_DONE_SUBMITTING_DATA);
+
                 Toast.makeText(serviceContext, "Data submitted", Toast.LENGTH_LONG).show();
                 CustomerKitApplication.getApplication(mService).getDefaultSharedPreferences()
                         .edit()
@@ -527,12 +541,10 @@ public class APKInstallCheckService extends Service {
 
             } catch (Exception e) {
                 Log.e("Submit data Failed: ", e.getMessage());
-                // TODO: 6/10/2016 Give retry option... dont lose collected data
 
                 return false;
             }
             return true;
         }
     }
-
 }

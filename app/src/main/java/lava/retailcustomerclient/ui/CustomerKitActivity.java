@@ -35,6 +35,7 @@ import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.services.APKInstallCheckService;
 import lava.retailcustomerclient.utils.AppDownloader;
 import lava.retailcustomerclient.utils.AppInfoObject;
+import lava.retailcustomerclient.utils.AppsListToClientObject;
 import lava.retailcustomerclient.utils.Constants;
 import lava.retailcustomerclient.utils.GetAppsList;
 import lava.retailcustomerclient.deviceutils.PhoneUtils;
@@ -44,7 +45,7 @@ import lava.retailcustomerclient.utils.ProcessState;
 
 public class CustomerKitActivity extends Activity implements AppDownloader.AppDownloadCallback {
 
-    private List<AppInfoObject> appsList;
+    private AppsListToClientObject appsListObj;
     int downloadCount = 0;
     Button installButton;
 
@@ -68,7 +69,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     protected void onResume() {
         super.onResume();
 
-        if (appsList != null) {
+        if (appsListObj != null && appsListObj.appsList != null) {
             setGridAdapter();
         }
 
@@ -154,16 +155,16 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     private void fetchAppsList() {
 
         // get apps list from Promoter's phone
-        GetAppsList g = new GetAppsList();
-        g.setContext(this);
         try {
             //.get makes it blocking
             // // TODO: 5/11/2016 make this unblocking. http error can cause UI hang
             ProcessState.setState(ProcessState.STATE_GETTING_APPSLIST);
-            appsList = g.execute().get();
+
+            GetAppsList g = new GetAppsList(this);
+            appsListObj = g.execute().get();
 
             // update grid
-            if (appsList != null) {
+            if (appsListObj != null && appsListObj.appsList != null) {
                 setGridAdapter();
 
                 installButton.setOnClickListener(new View.OnClickListener() {
@@ -194,12 +195,12 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
 
     public void setGridAdapter () {
         GridView gridview = (GridView) findViewById(R.id.appsgrid);
-        gridview.setAdapter(new GridViewAdapter(CustomerKitActivity.this, getApplicationContext(), appsList));
+        gridview.setAdapter(new GridViewAdapter(CustomerKitActivity.this, getApplicationContext(), appsListObj.appsList));
 
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Toast.makeText(CustomerKitActivity.this, "" + appsList.get(position).packageName,
+                Toast.makeText(CustomerKitActivity.this, "" + appsListObj.appsList.get(position).packageName,
                         Toast.LENGTH_SHORT).show();
             }
         });
@@ -220,7 +221,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         //Step 1: Download Apps
         ProcessState.setState(ProcessState.STATE_DOWNLOADING_APKS);
         AppDownloader a = new AppDownloader(this);
-        a.download(getApplicationContext().getFilesDir().getAbsolutePath(), appsList);
+        a.download(getApplicationContext().getFilesDir().getAbsolutePath(), appsListObj.appsList);
     }
 
     private boolean checkPreConditions() {
@@ -251,7 +252,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         downloadCount++;
 
         // check if all are downloaded
-        if( downloadCount == appsList.size()) {
+        if( downloadCount == appsListObj.appsList.size()) {
             ProcessState.setState(ProcessState.STATE_DONE_DOWNLOADING_APKS);
             ShowToast("All apk's downloaded.");
 
@@ -260,7 +261,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             Intent intent = new Intent(this, APKInstallCheckService.class);
             bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-            apkInstallCheckService.installApps(appsList);
+            apkInstallCheckService.installApps(appsListObj);
 
             //enable installButton again when everything is done
             // // TODO: 5/26/2016 enable after all installs are done. not before. After enabling, change onClick()

@@ -14,18 +14,18 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+
+import lava.retailcustomerclient.ui.CustomerKitApplication;
 
 /**
  * Created by Mridul on 4/20/2016.
  */
-public class GetAppsList extends AsyncTask<Void, Void, List<AppInfoObject>> {
+public class GetAppsList extends AsyncTask<Void, Void, AppsListToClientObject> {
 
     private Context context;
-    List<AppInfoObject> myAppsList;
+    AppsListToClientObject appsListObj;
 
-    public void setContext(Context c){
+    public GetAppsList(Context c) {
         context = c;
     }
 
@@ -33,7 +33,7 @@ public class GetAppsList extends AsyncTask<Void, Void, List<AppInfoObject>> {
         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
     }
 
-    protected void onPostExecute(List<AppInfoObject> list) {
+    protected void onPostExecute(AppsListToClientObject list) {
 
         ProcessState.setState(ProcessState.STATE_DONE_GETTING_APPSLIST);
 
@@ -41,11 +41,19 @@ public class GetAppsList extends AsyncTask<Void, Void, List<AppInfoObject>> {
             return;
         }
 
-        ShowToast("Found " + myAppsList.size() + " apps");
+        /*
+         * save start time to calculate elapsed time since getting appslist
+         */
+        CustomerKitApplication.getApplication(context).getDefaultSharedPreferences()
+                .edit()
+                .putLong("START_TIME_MILLIS", System.currentTimeMillis())
+                .commit();
+
+        ShowToast("Found " + appsListObj.appsList.size() + " apps");
     }
 
     @Override
-    protected List<AppInfoObject> doInBackground(Void... voids) {
+    protected AppsListToClientObject doInBackground(Void... voids) {
 
         try
         {
@@ -64,9 +72,9 @@ public class GetAppsList extends AsyncTask<Void, Void, List<AppInfoObject>> {
             InputStream is = connection.getInputStream();
             responseText = IOUtils.toString(is);
 
-            Type listType = new TypeToken<ArrayList<AppInfoObject>>() {}.getType();
+            Type listType = new TypeToken<AppsListToClientObject>() {}.getType();
             Gson gson = new Gson();
-            myAppsList = gson.fromJson(responseText, listType);
+            appsListObj = gson.fromJson(responseText, listType);
 
         } catch(Exception ex) {
             Log.e("Download appslist Failed: ", ex.getMessage());
@@ -74,6 +82,6 @@ public class GetAppsList extends AsyncTask<Void, Void, List<AppInfoObject>> {
             return null;
         }
 
-        return myAppsList;
+        return appsListObj;
     }
 }
