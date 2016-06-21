@@ -422,6 +422,11 @@ public class APKInstallCheckService extends Service {
     private void onApkInstallDone(String packageName) {
 
         Log.e("onApkInstallDone", "Installed: " + packageName);
+
+        /* remove pending timed messages */
+        mHandler.removeCallbacksAndMessages(null);
+        //mHandler.removeMessages(MSG_PACKAGE_INSTALL_CHECK);
+
         if (installList != null) {
 
             installList.get(nextIndex).installDone = INSTALL_SUCCESS; // installed
