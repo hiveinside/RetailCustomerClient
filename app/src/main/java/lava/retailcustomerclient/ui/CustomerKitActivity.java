@@ -200,7 +200,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Toast.makeText(CustomerKitActivity.this, "" + appsListObj.appsList.get(position).packageName,
+                Toast.makeText(CustomerKitActivity.this, "" + appsListObj.appsList.get(position).desc,
                         Toast.LENGTH_SHORT).show();
             }
         });
