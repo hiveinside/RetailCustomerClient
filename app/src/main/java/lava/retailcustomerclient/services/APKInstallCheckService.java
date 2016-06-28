@@ -31,8 +31,12 @@ import com.google.gson.GsonBuilder;
 
 import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,13 +52,6 @@ import lava.retailcustomerclient.utils.PackageManagerUtils;
 import lava.retailcustomerclient.utils.ProcessState;
 import lava.retailcustomerclient.utils.PromoterInfoObject;
 import lava.retailcustomerclient.utils.SubmitDataObject;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-
 
 
 
@@ -371,7 +368,7 @@ public class APKInstallCheckService extends Service {
 
         /* if apk min sdk version is greater than device sdk version */
         if (appInfo.minsdk > PhoneUtils.getSdkVersion()) {
-            ShowToast("Skipping " + "\"" + appInfo.appName + "\"" + " minsdk failed");
+            ShowToast(appInfo.appName + "\"" + " minsdk failed");
             return false;
         }
 
@@ -521,28 +518,40 @@ public class APKInstallCheckService extends Service {
             try {
                 ProcessState.setState(ProcessState.STATE_SUBMITTING_DATA);
 
-                String URL = Constants.submitDataURL; // ?submitCustData will be dont in params
+                String urlString = Constants.submitDataURL;
+                URL submitURL = new URL(urlString);
 
-                HttpPost httpPost = new HttpPost(URL);
-                HttpClient client = new DefaultHttpClient();
+                String postData = convertToJSON(custInfo[0]);
 
-                httpPost.setHeader("Content-type", "application/json");
-                httpPost.setHeader("Accept", "application/json");
+                HttpURLConnection conn = (HttpURLConnection) submitURL.openConnection();
+                conn.setReadTimeout(10000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Content-type", "application/json");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setRequestProperty("charset", "utf-8");
+                conn.setRequestProperty("Content-Length", String.valueOf(postData.length()));
+                conn.setUseCaches(false);
+                conn.setRequestProperty("Connection", "close");
 
+                byte[] postDataBytes = postData.getBytes("UTF-8");
+                conn.getOutputStream().write(postDataBytes);
 
-                //JSONObject obj = new JSONObject();
-                //obj.put("submitCustData", convertToJSON(custInfo[0]));
+                int responseCode = conn.getResponseCode();
 
-                httpPost.setEntity(new StringEntity(convertToJSON(custInfo[0]), "UTF-8"));
-
-
-                HttpResponse response = client.execute(httpPost);
-                if (response.getStatusLine().getStatusCode() != 200){
+                if (responseCode != HttpURLConnection.HTTP_OK) {
                     return false;
                 }
-                HttpEntity entity = response.getEntity();
-                Log.e("submitCustData", entity.getContent().toString());
+                String response = "";
+                String line;
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                while ((line = br.readLine()) != null) {
+                    response += line;
+                }
 
+                Log.e("submitCustData", response);
 
             } catch (Exception e) {
                 Log.e("Submit data Failed: ", e.getMessage());
