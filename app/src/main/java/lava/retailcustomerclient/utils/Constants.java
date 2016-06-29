@@ -15,7 +15,7 @@ public class Constants {
     public static final String submitDataURL = "http://192.168.43.1:8888/submitCustData";
     public static final String promoterBaseURL = "http://192.168.43.1:8888";
 
-    public static final int PACKAGE_INSTALL_TIMEOUT = 60000; // ms
+    public static final int PACKAGE_INSTALL_TIMEOUT = 1200000; // ms // // TODO: 6/28/2016 decide if 2 mins is enough
 
 
 
