@@ -1,6 +1,7 @@
 package lava.retailcustomerclient.ui;
 
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ComponentName;
@@ -8,15 +9,19 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -29,7 +34,7 @@ import android.widget.Toast;
 
 import com.liulishuo.filedownloader.BaseDownloadTask;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import lava.retailcustomerclient.R;
 import lava.retailcustomerclient.services.APKInstallCheckService;
@@ -56,6 +61,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
     public static final int MSG_UPDATE_UI = 1000;
 
     public static final int MSG_ASK_FOR_WIFI = 2001;
+    public static int OVERLAY_PERMISSION_REQ_CODE = 1234;
 
     private Handler mHandler;
 
@@ -231,11 +237,82 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             return false;
         }
 
+        if (checkSystemPermissions() == false) {
+            return false;
+        }
+
         if (PhoneUtils.getIMEI(getApplicationContext()) == null) {
             ShowToast("Error: unable to read IMEI");
             return false;
         }
         return true;
+    }
+
+    boolean checkSystemPermissions() {
+
+        ArrayList<String> list = new ArrayList<String>();
+        boolean ask = false;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Check if the READ_PHONE_STATE permission is already available.
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // READ_PHONE_STATE permission has not been granted.
+                list.add(Manifest.permission.READ_PHONE_STATE);
+                ask = true;
+            }
+
+            //java.io.IOException: Destination '/storage/emulated/0/AppsShare/temp/in.redbus.android.apk' directory cannot be created
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                list.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                ask = true;
+            }
+
+            if (ask == true) {
+                requestPermissions(list.toArray(new String[0]), 0);
+                return false;
+            }
+
+            if (!Settings.canDrawOverlays(this)) {
+                requestDrawingPermission(this);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void requestDrawingPermission(Context context) {
+        new AlertDialog.Builder(context)
+                .setTitle("Need drawing permission")
+                .setMessage("Open drawing settings to allow?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:" + getPackageName()));
+                        startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == OVERLAY_PERMISSION_REQ_CODE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (!Settings.canDrawOverlays(this)) {
+                    // SYSTEM_ALERT_WINDOW permission not granted...
+                    ShowToast("Permission not granted");
+                }
+            }
+        }
     }
 
     public void updateButtonText(String msg) {
