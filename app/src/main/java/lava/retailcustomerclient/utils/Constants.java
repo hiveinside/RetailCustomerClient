@@ -19,15 +19,7 @@ public class Constants {
 
 
 
-    private static final String androidPackageInstallerPkg = "com.android.packageinstaller";
-    private static final String androidPackageInstallerPkgM = "com.google.android.packageinstaller";
-
-    public static String getAndroidPackageInstallerName () {
-        if (PhoneUtils.getSdkVersion() <= 22) {
-            return androidPackageInstallerPkg;
-        } else {
-            // >= 23 -- android M
-            return androidPackageInstallerPkgM;
-        }
-    }
+    public static final String androidPackageInstallerPkg[] = {
+            "com.android.packageinstaller",
+            "com.google.android.packageinstaller"};
 }

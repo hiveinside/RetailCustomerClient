@@ -16,6 +16,7 @@ import android.content.Context;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lava.retailcustomerclient.R;
@@ -37,11 +38,12 @@ public class RetailAccessibilityService extends AccessibilityService {
 
         AccessibilityNodeInfo mEventSource = event.getSource();
         boolean isAndroidInstaller = false;
-        String androidInstallerPkgName = Constants.getAndroidPackageInstallerName();
-        if (event.getPackageName() == null) {
+        String eventPackageName = event.getPackageName().toString();
+
+        if (eventPackageName == null) {
             return; // fix #85. Sometimes source package is coming as null.
         }
-        isAndroidInstaller = androidInstallerPkgName.contains(event.getPackageName());
+        isAndroidInstaller = Arrays.asList(Constants.androidPackageInstallerPkg).contains(eventPackageName);
 
         if (isAndroidInstaller) {
             AccessibilityNodeInfo rootInActiveWindow = getRootInActiveWindow();
