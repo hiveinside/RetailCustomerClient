@@ -7,8 +7,10 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
 
+import com.crashlytics.android.Crashlytics;
 import com.liulishuo.filedownloader.FileDownloader;
 
+import io.fabric.sdk.android.Fabric;
 import lava.retailcustomerclient.utils.NetworkUtils;
 import lava.retailcustomerclient.utils.ProcessState;
 
@@ -28,6 +30,8 @@ public class CustomerKitApplication extends Application {
         FileDownloader.init(getApplicationContext());
         mSharedPreferences = getSharedPreferences("default", MODE_PRIVATE);
         ProcessState.getInstance();
+
+        Fabric.with(this, new Crashlytics());
     }
 
 
