@@ -34,15 +34,15 @@ public class RetailAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        Log.i(TAG, "ACC::onAccessibilityEvent: " + event.getEventType());
+        //Log.i(TAG, "ACC::onAccessibilityEvent: " + event.getEventType());
 
         AccessibilityNodeInfo mEventSource = event.getSource();
         boolean isAndroidInstaller = false;
-        String eventPackageName = event.getPackageName().toString();
 
-        if (eventPackageName == null) {
+        if (event.getPackageName() == null) {
             return; // fix #85. Sometimes source package is coming as null.
         }
+        String eventPackageName = event.getPackageName().toString();
         isAndroidInstaller = Arrays.asList(Constants.androidPackageInstallerPkg).contains(eventPackageName);
 
         if (isAndroidInstaller) {
@@ -131,7 +131,7 @@ public class RetailAccessibilityService extends AccessibilityService {
                 for (int i = 0; i < rootNode.getChildCount(); i++) {
                     AccessibilityNodeInfo nodeInfo = rootNode.getChild(i);
 
-                    Log.i(TAG, "ACC::onAccessibilityEvent: nodeInfo=" + nodeInfo);
+                    //Log.i(TAG, "ACC::onAccessibilityEvent: nodeInfo=" + nodeInfo);
                     if (nodeInfo == null) {
                         return;
                     }
@@ -143,7 +143,7 @@ public class RetailAccessibilityService extends AccessibilityService {
                         List<AccessibilityNodeInfo> nodelist = nodeInfo.findAccessibilityNodeInfosByViewId(viewID);
 
                         for (AccessibilityNodeInfo node : nodelist) {
-                            Log.i(TAG, "ACC::onAccessibilityEvent: next or install " + node);
+                            //Log.i(TAG, "ACC::onAccessibilityEvent: next or install " + node);
                             node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                         }
                     }
