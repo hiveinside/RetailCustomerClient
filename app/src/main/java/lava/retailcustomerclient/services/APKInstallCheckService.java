@@ -109,11 +109,25 @@ public class APKInstallCheckService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         if (intent != null && Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
-            onApkInstallDone(intent.getStringExtra("installed_package"));
-            //sendMessageToUI(intent.getStringExtra("installed_package"));
+            String installedPkg = intent.getStringExtra("installed_package");
+            if ( wasInstalledByMe(installedPkg) ) {
+                onApkInstallDone(installedPkg);
+            }
         }
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private boolean wasInstalledByMe (String installedPkg) {
+
+        if (installList != null && nextIndex >= 0) {
+            if (installList.get(nextIndex).packageName.equals(installedPkg)) {
+                return true;
+            } else {
+                Log.e("wasInstalledByMe", "Not mine: " + installedPkg);
+            }
+        }
+        return false;
     }
 
     /**
@@ -264,8 +278,6 @@ public class APKInstallCheckService extends Service {
             wm.removeView(mView);
             mView = null;
         }
-
-        nextIndex = 0;
     }
 
     private static void updateOverlay() {
@@ -407,8 +419,8 @@ public class APKInstallCheckService extends Service {
         ProcessState.setState(ProcessState.STATE_DONE_INSTALLING_APKS);
         stopOverlay();
 
-        //reset static data
-        nextIndex = 0;
+        //reset static data. Dont make it zero
+        nextIndex = -1;
 
         //Collect Installation & Device data & submit
         ProcessState.setState(ProcessState.STATE_COLLECTING_DEVICE_DATA);
