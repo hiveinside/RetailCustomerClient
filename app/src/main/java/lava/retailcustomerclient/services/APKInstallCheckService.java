@@ -204,11 +204,7 @@ public class APKInstallCheckService extends Service {
     private void sendMessageToUI(int message, Object obj) {
         for (int i=0; i<mClients.size(); i++) {
             try {
-                //Send data as a String
-                /*Bundle b = new Bundle();
-                b.putString("str1", "ab" + str + "cd");
-                */Message msg = Message.obtain(null, CustomerKitActivity.MSG_ASK_FOR_WIFI);
-                //msg.setData(b);
+                Message msg = Message.obtain(null, message);
                 mClients.get(i).send(msg);
             }
             catch (RemoteException e) {
@@ -308,13 +304,14 @@ public class APKInstallCheckService extends Service {
 
 
         ProcessState.setState(ProcessState.STATE_INSTALLING_APKS);
+        sendMessageToUI(CustomerKitActivity.MSG_UPDATE_UI, null);
         Log.d("installApps", "Starting app installation");
-
-        startOverlay();
 
         // start Installs
         // reset static variables
         nextIndex = 0;
+
+        startOverlay();
 
         continueInstallApps();
     }
@@ -426,6 +423,8 @@ public class APKInstallCheckService extends Service {
         ProcessState.setState(ProcessState.STATE_COLLECTING_DEVICE_DATA);
         SubmitData s = new SubmitData(serviceContext);
         s.execute(getSubmitDataObject());
+
+        sendMessageToUI(CustomerKitActivity.MSG_UPDATE_UI, null);
     }
 
     private void onApkInstallDone(String packageName) {
@@ -509,6 +508,8 @@ public class APKInstallCheckService extends Service {
                         .edit()
                         .putBoolean("report_submitted", true)
                         .commit();
+
+                sendMessageToUI(CustomerKitActivity.MSG_UPDATE_UI, null);
 
             } else {
                 Toast.makeText(serviceContext, "Failed to submit data. Process not completed.", Toast.LENGTH_LONG).show();

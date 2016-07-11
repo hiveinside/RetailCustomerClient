@@ -407,15 +407,10 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_UPDATE_UI:
-                    String msgText = msg.getData().getString("str1");
-                    //ShowToast("MSG_UPDATE_UI: " + msgText);
+                    UpdateUI();
                     break;
 
                 case MSG_ASK_FOR_WIFI:
-
-
-
-
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -425,40 +420,6 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
 
                         }
                     });
-
-
-
-
-
-                   /* setContentView(R.layout.activity_first);
-
-                    ProcessState.setState(ProcessState.STATE_NOT_STARTED);
-
-                    TextView infoText = (TextView)findViewById(R.id.infoText);
-                    infoText.setText("Not connected to " + Constants.wifiSSID);
-
-                    Button button = (Button)findViewById(R.id.button);
-                    button.setText("Retry");
-
-                    button.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            //startProcess();
-
-                            try {
-                                Message msg = Message.obtain(null, APKInstallCheckService.MSG_RETRY_SUBMISSION);
-                                msg.replyTo = activityMessenger;
-                                serviceMessenger.send(msg);
-                            }
-                            catch (RemoteException e) {
-                                // In this case the service has crashed before we could even do anything with it
-                            }
-
-
-                        }
-                    });*/
-
-
                     break;
                 default:
                     super.handleMessage(msg);
@@ -472,7 +433,7 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
         // 1. Instantiate an AlertDialog.Builder with its constructor
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-// 2. Chain together various setter methods to set the dialog characteristics
+        // 2. Chain together various setter methods to set the dialog characteristics
         builder.setMessage(R.string.report_not_submitted)
                 .setTitle(R.string.retry);
         builder.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
@@ -518,25 +479,25 @@ public class CustomerKitActivity extends Activity implements AppDownloader.AppDo
             case ProcessState.STATE_DONE_DOWNLOADING_APKS:
                 break;
             case ProcessState.STATE_INSTALLING_APKS:
-                break;
             case ProcessState.STATE_DONE_INSTALLING_APKS:
-                break;
             case ProcessState.STATE_COLLECTING_DEVICE_DATA:
-                break;
             case ProcessState.STATE_DONE_COLLECTING_DEVICE_DATA:
-                break;
             case ProcessState.STATE_SUBMITTING_DATA:
+                if (installButton != null)
+                    installButton.setText("Installing APKs");
                 break;
             case ProcessState.STATE_DONE_SUBMITTING_DATA:
                 // update button onClick - uninstall
-                installButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        uninstallSelf();
-                    }
-                });
-                installButton.setText("Process complete. Press to remove kit & exit.");
-                installButton.setEnabled(true);
+                if (installButton != null) {
+                    installButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            uninstallSelf();
+                        }
+                    });
+                    installButton.setText("Process complete. Press to remove kit & exit.");
+                    installButton.setEnabled(true);
+                }
                 break;
 
             default:
